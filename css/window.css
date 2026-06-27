@@ -1,0 +1,132 @@
+/* 
+ * macOS Window
+ */
+.macos-window {
+    position: absolute;
+    /* top/left are set by JS now */
+    width: 800px;
+    height: 500px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.8);
+    display: flex;
+    overflow: hidden;
+    color: #333;
+    z-index: 50;
+    /* Only transition opacity and transform, avoid left/top to prevent dragging lag */
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(255,255,255,0.5);
+}
+.macos-window.minimized {
+    transform: translateY(50vh) scale(0.3) !important;
+    opacity: 0;
+    pointer-events: none;
+}
+.macos-window.maximized {
+    top: 36px !important; /* below menu bar */
+    left: 0 !important;
+    transform: none !important;
+    width: 100vw !important;
+    height: calc(100vh - 140px) !important; /* leave room for dock */
+    border-radius: 8px !important;
+}
+
+.sidebar {
+    width: 220px;
+    background: rgba(240, 240, 240, 0.5);
+    border-right: 1px solid rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+}
+.traffic-lights {
+    display: flex;
+    gap: 8px;
+    padding: 18px;
+}
+.traffic-light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.2);
+}
+.traffic-light.close { background: #FF5F56; border: .5px solid #E0443E; }
+.traffic-light.minimize { background: #FFBD2E; border: .5px solid #DEA123; }
+.traffic-light.maximize { background: #27C93F; border: .5px solid #1AAB29; }
+
+.sidebar-items {
+    padding: 0 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.sidebar-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.4);
+    padding: 8px 8px 4px 8px;
+}
+.sidebar-item {
+    font-size: 13px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #555;
+    font-weight: 500;
+}
+.sidebar-item:hover { background: rgba(0,0,0,0.05); }
+.sidebar-item.active { background: rgba(0,0,0,0.1); color: #000; font-weight: 600; }
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.title-bar {
+    height: 52px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    cursor: grab;
+}
+.title-bar:active {
+    cursor: grabbing;
+}
+.title-bar-left, .title-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: #666;
+}
+.title-bar-left i, .title-bar-right i { font-size: 14px; cursor: pointer; }
+.window-title { font-weight: 600; font-size: 14px; color: #333; margin-left: 8px; }
+
+/* Templated Window Body Content */
+.window-body {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.window-app-icon {
+    width: 128px;
+    height: 128px;
+    object-fit: contain;
+    filter: drop-shadow(0 15px 30px rgba(0,0,0,0.25));
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.4) translateY(20px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}

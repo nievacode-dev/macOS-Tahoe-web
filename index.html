@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS Replica</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/window.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="desktop">
+        <!-- Lock Screen -->
+        <div class="lockscreen" id="lockscreen">
+            <div class="lock-top">
+                <div class="lock-date" id="lock-date">Tue Apr 1</div>
+                <div class="lock-time" id="lock-time">9:41</div>
+            </div>
+            <div class="lock-bottom">
+                <div class="lock-avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="lock-name">Guest</div>
+                <input type="password" class="lock-input" id="lock-input" placeholder="Enter Password" autocomplete="off">
+                <div class="lock-hint">Touch ID or Enter Password</div>
+            </div>
+        </div>
+
+        <!-- Notch -->
+        <div class="notch">
+            <div class="camera-lens"></div>
+        </div>
+
+        <!-- Desktop Context Menu -->
+        <div class="desktop-context-menu" id="context-menu">
+            <div class="cm-item">New Folder</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Get Info</div>
+            <div class="cm-item">Change Desktop Background...</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Use Stacks</div>
+            <div class="cm-item">Sort By <i class="fa-solid fa-chevron-right cm-arrow"></i></div>
+            <div class="cm-item">Clean Up</div>
+            <div class="cm-item">Clean Up By <i class="fa-solid fa-chevron-right cm-arrow"></i></div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Show View Options</div>
+        </div>
+
+        <!-- Wi-Fi Dropdown -->
+        <div class="wifi-menu" id="wifi-menu">
+            <div class="wifi-header">
+                <span>Wi-Fi</span>
+                <label class="switch">
+                    <input type="checkbox" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="cm-divider"></div>
+            <div class="wifi-section-title">Preferred Networks</div>
+            <div class="cm-item active-network"><i class="fa-solid fa-check check-icon"></i> Home Network <i class="fa-solid fa-lock wifi-lock"></i></div>
+            <div class="cm-divider"></div>
+            <div class="wifi-section-title">Other Networks</div>
+            <div class="cm-item"><i class="fa-solid fa-wifi spacer-icon"></i> Guest Network</div>
+            <div class="cm-item"><i class="fa-solid fa-wifi spacer-icon"></i> Starbucks WiFi</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Network Preferences...</div>
+        </div>
+
+        <!-- Spotlight Search -->
+        <div class="spotlight-search" id="spotlight-search">
+            <i class="fa-solid fa-magnifying-glass spotlight-icon"></i>
+            <input type="text" placeholder="Spotlight Search" id="spotlight-input" autocomplete="off">
+        </div>
+
+        <!-- Notification Center -->
+        <div class="notification-center" id="notification-center">
+            <div class="nc-date">Monday, September 15</div>
+            
+            <div class="nc-widget calendar-widget">
+                <div class="nc-widget-title">Calendar</div>
+                <div class="calendar-event">
+                    <div class="event-line"></div>
+                    <div class="event-details">
+                        <div class="event-name">Team Meeting</div>
+                        <div class="event-time">1:00 PM - 2:00 PM</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nc-widget weather-widget">
+                <div class="nc-widget-title">Weather</div>
+                <div class="weather-content">
+                    <i class="fa-solid fa-cloud-sun fa-2x"></i>
+                    <div class="weather-temp">72°</div>
+                    <div class="weather-loc">San Francisco</div>
+                </div>
+            </div>
+            
+            <div class="nc-notifications">
+                <div class="nc-widget-title">Notifications</div>
+                <div class="nc-notification-card">
+                    <div class="nc-notif-header">
+                        <img src="icons/apple/Messages.png" width="16" alt="Messages">
+                        <span>Messages</span>
+                        <span class="nc-notif-time">Now</span>
+                    </div>
+                    <div class="nc-notif-body">
+                        <strong>Erica Souza</strong>
+                        <p>Hey, did you finish the new design?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Siri Orb -->
+        <div class="siri-orb-container" id="siri-orb">
+            <div class="siri-glow"></div>
+            <div class="siri-text">What can I help you with?</div>
+        </div>
+
+        <!-- Apple Menu -->
+        <div class="top-dropdown" id="apple-menu">
+            <div class="cm-item">About This Mac</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">System Settings...</div>
+            <div class="cm-item">App Store...</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Recent Items <i class="fa-solid fa-chevron-right cm-arrow"></i></div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Force Quit...</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Sleep</div>
+            <div class="cm-item">Restart...</div>
+            <div class="cm-item">Shut Down...</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Lock Screen</div>
+            <div class="cm-item">Log Out Guest...</div>
+        </div>
+
+        <!-- Finder Menu -->
+        <div class="top-dropdown" id="finder-menu">
+            <div class="cm-item">About Finder</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Settings...</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Empty Trash...</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Services <i class="fa-solid fa-chevron-right cm-arrow"></i></div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Hide Finder</div>
+            <div class="cm-item">Hide Others</div>
+            <div class="cm-item">Show All</div>
+        </div>
+
+        <!-- Dummy Menu for rest of items -->
+        <div class="top-dropdown" id="dummy-menu">
+            <div class="cm-item">Undo</div>
+            <div class="cm-item">Redo</div>
+            <div class="cm-divider"></div>
+            <div class="cm-item">Cut</div>
+            <div class="cm-item">Copy</div>
+            <div class="cm-item">Paste</div>
+            <div class="cm-item">Select All</div>
+        </div>
+
+        <!-- Top Menu Bar -->
+        <nav class="menu-bar">
+            <div class="menu-left">
+                <i class="fa-brands fa-apple apple-logo" id="apple-menu-toggle"></i>
+                <span class="menu-item active" id="finder-menu-toggle">Finder</span>
+                <span class="menu-item" id="file-menu-toggle">File</span>
+                <span class="menu-item" id="edit-menu-toggle">Edit</span>
+                <span class="menu-item" id="view-menu-toggle">View</span>
+                <span class="menu-item" id="go-menu-toggle">Go</span>
+                <span class="menu-item" id="window-menu-toggle">Window</span>
+                <span class="menu-item" id="help-menu-toggle">Help</span>
+            </div>
+            <div class="menu-right">
+                <span class="icon-item" id="wifi-toggle"><i class="fa-solid fa-wifi"></i></span>
+                <span class="icon-item" id="spotlight-toggle"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <span class="icon-item cc-toggle" id="cc-toggle" title="Control Center">
+                    <i class="fa-solid fa-sliders"></i>
+                </span>
+                <span class="icon-item siri" id="siri-toggle">
+                    <img src="icons/apple/Siri.png" alt="Siri" width="16" height="16" style="filter: brightness(0) invert(1);">
+                </span>
+                <span class="date-time" id="datetime-toggle">Mon Sep 15 11:14 PM</span>
+            </div>
+        </nav>
+
+        <!-- Controls Gallery (Edit Mode) -->
+        <div class="controls-gallery" id="controls-gallery">
+            <div class="gallery-sidebar">
+                <div class="gallery-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search Controls">
+                </div>
+                <div class="gallery-nav">
+                    <div class="gallery-item active"><i class="fa-solid fa-grip"></i> All Controls</div>
+                    <div class="gallery-item"><i class="fa-solid fa-battery-half"></i> Battery</div>
+                    <div class="gallery-item"><i class="fa-regular fa-clock"></i> Clock</div>
+                    <div class="gallery-item"><i class="fa-solid fa-wifi"></i> Connectivity</div>
+                    <div class="gallery-item"><i class="fa-solid fa-desktop"></i> Desktop & Finder</div>
+                    <div class="gallery-item"><i class="fa-solid fa-sun"></i> Display & Brightness</div>
+                </div>
+            </div>
+            <div class="gallery-main">
+                <div class="gallery-section">
+                    <span class="gallery-header">Suggestions</span>
+                    <div class="gallery-widgets">
+                        <div class="gallery-widget-slot" data-widget="battery-large">
+                            <div class="gw-preview battery-preview">
+                                <i class="fa-solid fa-battery-half"></i>
+                                <span>100%</span>
+                            </div>
+                            <div class="gw-badge add-badge"><i class="fa-solid fa-plus"></i></div>
+                        </div>
+                        <div class="gallery-widget-slot" data-widget="clock-alarms">
+                            <div class="gw-preview clock-preview">
+                                <i class="fa-regular fa-clock"></i>
+                                <span>Alarm</span>
+                            </div>
+                            <div class="gw-badge add-badge"><i class="fa-solid fa-plus"></i></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gallery-section">
+                    <span class="gallery-header">Battery</span>
+                    <div class="gallery-widgets">
+                        <!-- Duplicate for layout purposes -->
+                        <div class="gallery-widget-slot" data-widget="battery-small">
+                            <div class="gw-preview battery-preview-small">
+                                <i class="fa-solid fa-battery-half"></i>
+                            </div>
+                            <div class="gw-badge add-badge"><i class="fa-solid fa-plus"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Center -->
+        <div class="control-center" id="control-center">
+            <div class="cc-section cc-top-grid">
+                <div class="cc-col-left">
+                    <div class="cc-module cc-pill cc-wifi">
+                        <div class="cc-icon-circle active"><i class="fa-solid fa-wifi"></i></div>
+                        <div class="cc-text">
+                            <span class="cc-title">Wi-Fi</span>
+                            <span class="cc-subtitle">Home</span>
+                        </div>
+                    </div>
+                    <div class="cc-row-2">
+                        <div class="cc-icon-circle large active"><i class="fa-brands fa-bluetooth-b"></i></div>
+                        <div class="cc-icon-circle large active"><i class="fa-solid fa-satellite-dish"></i></div>
+                    </div>
+                </div>
+                <div class="cc-col-right">
+                    <div class="cc-module cc-now-playing">
+                        <div class="np-header">
+                            <img src="icons/apple/Podcasts.png" alt="Art" class="np-art">
+                            <div class="np-info">
+                                <span class="np-title">Besties</span>
+                                <span class="np-subtitle">Black Country, New R...</span>
+                            </div>
+                        </div>
+                        <div class="np-controls">
+                            <i class="fa-solid fa-backward-step"></i>
+                            <i class="fa-solid fa-play fa-lg"></i>
+                            <i class="fa-solid fa-forward-step"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="cc-section cc-focus-grid">
+                <div class="cc-col-left">
+                    <div class="cc-module cc-pill cc-focus">
+                        <div class="cc-icon-circle focus-icon"><i class="fa-solid fa-moon"></i></div>
+                        <div class="cc-text"><span class="cc-title">Focus</span></div>
+                    </div>
+                </div>
+                <div class="cc-col-right">
+                    <div class="cc-row-2">
+                        <div class="cc-icon-circle large outline"><i class="fa-regular fa-rectangle-list"></i></div>
+                        <div class="cc-icon-circle large outline"><i class="fa-solid fa-layer-group"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="cc-module cc-slider-box">
+                <span class="cc-title">Display</span>
+                <div class="cc-slider-wrapper">
+                    <div class="cc-slider-fill" id="display-fill"></div>
+                    <i class="fa-solid fa-sun cc-slider-icon"></i>
+                    <input type="range" class="cc-slider" id="display-slider" min="0" max="100" value="70">
+                </div>
+            </div>
+            <div class="cc-module cc-slider-box">
+                <span class="cc-title">Sound</span>
+                <div class="cc-slider-wrapper">
+                    <div class="cc-slider-fill" id="sound-fill"></div>
+                    <i class="fa-solid fa-volume-low cc-slider-icon"></i>
+                    <input type="range" class="cc-slider" id="sound-slider" min="0" max="100" value="50">
+                </div>
+            </div>
+            <div class="cc-bottom-tools">
+                <div class="cc-icon-circle large"><i class="fa-solid fa-circle-half-stroke"></i></div>
+                <div class="cc-icon-circle large"><i class="fa-solid fa-calculator"></i></div>
+                <div class="cc-icon-circle large"><i class="fa-solid fa-stopwatch"></i></div>
+                <div class="cc-icon-circle large"><i class="fa-solid fa-camera"></i></div>
+            </div>
+            <div class="cc-edit-btn">Edit Controls</div>
+        </div>
+
+        <!-- macOS Window Template -->
+        <template id="window-template">
+            <div class="macos-window">
+                <div class="sidebar">
+                    <div class="traffic-lights">
+                        <div class="traffic-light close btn-close"></div>
+                        <div class="traffic-light minimize btn-minimize"></div>
+                        <div class="traffic-light maximize btn-maximize"></div>
+                    </div>
+                    <div class="sidebar-items">
+                        <span class="sidebar-title">Favourites</span>
+                        <div class="sidebar-item active"><i class="fa-solid fa-layer-group"></i> Applications</div>
+                        <div class="sidebar-item"><i class="fa-solid fa-download"></i> Downloads</div>
+                        <div class="sidebar-item"><i class="fa-regular fa-image"></i> Screenshots</div>
+                        <div class="sidebar-item"><i class="fa-solid fa-desktop"></i> Desktop</div>
+                    </div>
+                </div>
+                <div class="main-content">
+                    <div class="title-bar">
+                        <div class="title-bar-left">
+                            <i class="fa-solid fa-chevron-left"></i>
+                            <i class="fa-solid fa-chevron-right"></i>
+                            <span class="window-title">Applications</span>
+                        </div>
+                        <div class="title-bar-right">
+                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                    </div>
+                    <div class="window-body">
+                        <!-- Content injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Dock Container -->
+        <div class="dock-container">
+            <div class="dock">
+                <div class="dock-apps">
+                    <div class="dock-icon-wrapper" data-name="Finder"><img src="icons/apple/Finder.png" alt="Finder" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Launchpad"><img src="icons/apple/Launchpad.png" alt="Launchpad" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Safari"><img src="icons/apple/Safari.png" alt="Safari" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Messages"><img src="icons/apple/Messages.png" alt="Messages" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Mail"><img src="icons/apple/Mail.png" alt="Mail" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Maps"><img src="icons/apple/Plans.png" alt="Maps" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Photos"><img src="icons/apple/Photos.png" alt="Photos" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="FaceTime"><img src="icons/apple/FaceTime.png" alt="FaceTime" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Calendar"><img src="icons/apple/Calendrier.png" alt="Calendar" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Contacts"><img src="icons/apple/Contacts.png" alt="Contacts" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Reminders"><img src="icons/apple/Rappels.png" alt="Reminders" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Notes"><img src="icons/apple/Notes.png" alt="Notes" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Apple TV"><img src="icons/apple/TV.png" alt="TV" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Music"><img src="icons/apple/Musique.png" alt="Music" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Podcasts"><img src="icons/apple/Podcasts.png" alt="Podcasts" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="App Store"><img src="icons/apple/App Store.png" alt="App Store" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="System Settings"><img src="icons/apple/Réglages système.png" alt="System Settings" class="dock-icon"></div>
+                </div>
+                <div class="dock-divider"></div>
+                <div class="dock-folders">
+                    <div class="dock-icon-wrapper" data-name="Downloads"><img src="icons/folders/Download.png" alt="Downloads" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Trash"><img src="icons/folders/Folder.png" alt="Folder" class="dock-icon"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/main.js"></script>
+    <script src="js/window.js"></script>
+</body>
+</html>
