@@ -31,11 +31,16 @@
 
         <!-- Desktop Context Menu -->
         <div class="desktop-context-menu" id="context-menu">
-            <div class="cm-item">New Folder</div>
+            <div class="cm-item" id="new-folder-btn">New Folder</div>
+            <div class="cm-item" id="open-terminal-btn">Open Terminal</div>
             <div class="cm-divider"></div>
             <div class="cm-item">Get Info</div>
             <div class="cm-item">Change Desktop Background...</div>
             <div class="cm-divider"></div>
+            <div class="cm-item" id="snap-to-grid-btn">
+                <span>Snap to Grid</span>
+                <i class="fa-solid fa-check check-icon" id="snap-check" style="opacity: 0;"></i>
+            </div>
             <div class="cm-item">Use Stacks</div>
             <div class="cm-item">Sort By <i class="fa-solid fa-chevron-right cm-arrow"></i></div>
             <div class="cm-item">Clean Up</div>
@@ -367,6 +372,7 @@
                     <div class="dock-icon-wrapper" data-name="Podcasts"><img src="icons/apple/Podcasts.png" alt="Podcasts" class="dock-icon"></div>
                     <div class="dock-icon-wrapper" data-name="App Store"><img src="icons/apple/App Store.png" alt="App Store" class="dock-icon"></div>
                     <div class="dock-icon-wrapper" data-name="System Settings"><img src="icons/apple/Réglages système.png" alt="System Settings" class="dock-icon"></div>
+                    <div class="dock-icon-wrapper" data-name="Terminal"><img src="icons/apple/Terminal.png" alt="Terminal" class="dock-icon"></div>
                 </div>
                 <div class="dock-divider"></div>
                 <div class="dock-folders">

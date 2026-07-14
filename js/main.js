@@ -45,6 +45,47 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     });
+
+    // --- Dock Icon Dragging ---
+    let draggedDockIcon = null;
+
+    wrappers.forEach(wrapper => {
+        wrapper.draggable = true;
+        
+        wrapper.addEventListener('dragstart', function(e) {
+            draggedDockIcon = this;
+            setTimeout(() => this.style.opacity = '0.5', 0);
+        });
+        
+        wrapper.addEventListener('dragend', function() {
+            setTimeout(() => this.style.opacity = '1', 0);
+            draggedDockIcon = null;
+        });
+        
+        wrapper.addEventListener('dragover', function(e) {
+            e.preventDefault(); 
+        });
+        
+        wrapper.addEventListener('drop', function(e) {
+            e.preventDefault();
+        });
+        
+        wrapper.addEventListener('dragenter', function(e) {
+            e.preventDefault();
+            if (this !== draggedDockIcon && this.parentNode === draggedDockIcon.parentNode) {
+                const allIcons = Array.from(this.parentNode.children);
+                const draggedIndex = allIcons.indexOf(draggedDockIcon);
+                const thisIndex = allIcons.indexOf(this);
+                
+                if (draggedIndex < thisIndex) {
+                    this.parentNode.insertBefore(draggedDockIcon, this.nextSibling);
+                } else {
+                    this.parentNode.insertBefore(draggedDockIcon, this);
+                }
+            }
+        });
+    });
+
     
     // --- Clock ---
     const timeDisplay = document.querySelector('.date-time');
@@ -192,9 +233,88 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Desktop Context Menu ---
+    // --- Desktop Context Menu & Drag Logic ---
     const desktop = document.querySelector('.desktop');
     const contextMenu = document.getElementById('context-menu');
+
+    let snapToGridEnabled = false;
+    const snapBtn = document.getElementById('snap-to-grid-btn');
+    const snapCheck = document.getElementById('snap-check');
+
+    if (snapBtn) {
+        snapBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            snapToGridEnabled = !snapToGridEnabled;
+            if (snapCheck) snapCheck.style.opacity = snapToGridEnabled ? '1' : '0';
+            closeAllOverlays();
+            
+            // Re-snap existing folders if enabled
+            if (snapToGridEnabled) {
+                document.querySelectorAll('.desktop-folder').forEach(folder => {
+                    const gridSizeX = 90;
+                    const gridSizeY = 110;
+                    let currentLeft = parseInt(folder.style.left) || 0;
+                    let currentTop = parseInt(folder.style.top) || 0;
+                    folder.style.left = `${Math.round(currentLeft / gridSizeX) * gridSizeX + 10}px`;
+                    folder.style.top = `${Math.round(currentTop / gridSizeY) * gridSizeY + 10}px`;
+                });
+            }
+        });
+    }
+
+    // Helper to make an element draggable on the desktop
+    function makeDraggable(element) {
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+        
+        element.addEventListener('mousedown', (e) => {
+            // Don't drag if clicking on the input
+            if (e.target.tagName === 'INPUT') return;
+            if (e.button !== 0) return; // Only left click
+            
+            isDragging = true;
+            
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = parseInt(element.style.left) || element.offsetLeft;
+            initialTop = parseInt(element.style.top) || element.offsetTop;
+            
+            // Bring to front
+            element.style.zIndex = 1000;
+            
+            function onMouseMove(moveEvent) {
+                if (!isDragging) return;
+                const dx = moveEvent.clientX - startX;
+                const dy = moveEvent.clientY - startY;
+                
+                element.style.left = `${initialLeft + dx}px`;
+                element.style.top = `${initialTop + dy}px`;
+            }
+            
+            function onMouseUp(upEvent) {
+                if (!isDragging) return;
+                isDragging = false;
+                element.style.zIndex = 50; // reset
+                
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                
+                if (snapToGridEnabled) {
+                    const gridSizeX = 90;
+                    const gridSizeY = 110;
+                    let currentLeft = parseInt(element.style.left) || 0;
+                    let currentTop = parseInt(element.style.top) || 0;
+                    
+                    element.style.left = `${Math.round(currentLeft / gridSizeX) * gridSizeX + 10}px`;
+                    element.style.top = `${Math.round(currentTop / gridSizeY) * gridSizeY + 10}px`;
+                }
+            }
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+    }
+
 
     desktop.addEventListener('contextmenu', (e) => {
         // Prevent default browser right-click menu
@@ -211,9 +331,125 @@ document.addEventListener('DOMContentLoaded', () => {
         if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
         if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
 
+        desktop.dataset.contextX = e.clientX;
+        desktop.dataset.contextY = e.clientY;
+
         contextMenu.style.display = 'flex';
         contextMenu.style.left = `${x}px`;
         contextMenu.style.top = `${y}px`;
+    });
+
+    // --- New Folder Logic ---
+    window.createDesktopFolder = function(folderName = 'untitled folder', x = null, y = null) {
+        if (x === null) {
+            x = parseInt(desktop.dataset.contextX) || 100;
+            x = x - 40;
+        }
+        if (y === null) {
+            y = parseInt(desktop.dataset.contextY) || 100;
+            y = y - 40;
+        }
+
+        const folder = document.createElement('div');
+        folder.className = 'desktop-folder';
+        folder.style.left = `${x}px`;
+        folder.style.top = `${y}px`;
+
+        const img = document.createElement('img');
+        img.src = 'icons/folders/Folder.png';
+        img.alt = 'Folder';
+        img.draggable = false; 
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'folder-name';
+        nameSpan.textContent = folderName;
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'folder-name-input';
+        nameInput.value = folderName;
+
+        folder.appendChild(img);
+        folder.appendChild(nameSpan);
+        folder.appendChild(nameInput);
+        desktop.appendChild(folder);
+
+        makeDraggable(folder);
+
+        if (snapToGridEnabled) {
+            const gridSizeX = 90;
+            const gridSizeY = 110;
+            let currentLeft = parseInt(folder.style.left) || 0;
+            let currentTop = parseInt(folder.style.top) || 0;
+            folder.style.left = `${Math.round(currentLeft / gridSizeX) * gridSizeX + 10}px`;
+            folder.style.top = `${Math.round(currentTop / gridSizeY) * gridSizeY + 10}px`;
+        }
+
+        function finishRename() {
+            const newName = nameInput.value.trim() || 'untitled folder';
+            nameSpan.textContent = newName;
+            nameSpan.classList.remove('editing');
+            nameInput.classList.remove('active');
+        }
+
+        nameInput.addEventListener('blur', finishRename);
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') finishRename();
+        });
+
+        folder.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.desktop-folder').forEach(f => f.classList.remove('selected'));
+            folder.classList.add('selected');
+        });
+
+        nameSpan.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (folder.classList.contains('selected')) {
+                nameSpan.classList.add('editing');
+                nameInput.classList.add('active');
+                nameInput.value = nameSpan.textContent;
+                nameInput.focus();
+                nameInput.select();
+            }
+        });
+        
+        return { folder, nameSpan, nameInput };
+    };
+
+    const newFolderBtn = document.getElementById('new-folder-btn');
+    if (newFolderBtn) {
+        newFolderBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            contextMenu.style.display = 'none';
+
+            const { nameSpan, nameInput } = window.createDesktopFolder('untitled folder');
+            
+            nameSpan.classList.add('editing');
+            nameInput.classList.add('active');
+            
+            setTimeout(() => {
+                nameInput.focus();
+                nameInput.select();
+            }, 50);
+        });
+    }
+
+    const openTerminalBtn = document.getElementById('open-terminal-btn');
+    if (openTerminalBtn) {
+        openTerminalBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            contextMenu.style.display = 'none';
+            const terminalDockIcon = document.querySelector('.dock-icon-wrapper[data-name="Terminal"]');
+            if (terminalDockIcon) terminalDockIcon.click();
+        });
+    }
+
+    // Deselect folders when clicking on desktop
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('desktop') || e.target.classList.contains('main-content')) {
+            document.querySelectorAll('.desktop-folder').forEach(f => f.classList.remove('selected'));
+        }
     });
 
     // --- Top Menu Bar Interactions ---
@@ -268,18 +504,39 @@ document.addEventListener('DOMContentLoaded', () => {
         otherLeftToggles.forEach(t => t && t.classList.remove('active'));
     }
 
+    let menuCloseTimeout;
+
     function setupMenuToggle(toggle, menu) {
         if (!toggle || !menu) return;
-        toggle.addEventListener('click', (e) => {
-            e.stopPropagation();
+
+        toggle.addEventListener('mouseenter', (e) => {
+            clearTimeout(menuCloseTimeout);
             const wasActive = menu.style.display === 'flex';
-            closeAllOverlays();
             if (!wasActive) {
+                closeAllOverlays();
                 toggle.classList.add('active');
                 menu.style.display = 'flex';
                 const rect = toggle.getBoundingClientRect();
                 menu.style.left = `${rect.left}px`;
             }
+        });
+
+        toggle.addEventListener('mouseleave', () => {
+            menuCloseTimeout = setTimeout(() => {
+                menu.style.display = 'none';
+                toggle.classList.remove('active');
+            }, 300);
+        });
+
+        menu.addEventListener('mouseenter', () => {
+            clearTimeout(menuCloseTimeout);
+        });
+
+        menu.addEventListener('mouseleave', () => {
+            menuCloseTimeout = setTimeout(() => {
+                menu.style.display = 'none';
+                toggle.classList.remove('active');
+            }, 300);
         });
     }
 

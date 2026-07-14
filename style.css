@@ -70,6 +70,59 @@ body {
 }
 
 /* 
+ * Desktop Folder
+ */
+.desktop-folder {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    cursor: pointer;
+    z-index: 50;
+}
+.desktop-folder img {
+    width: 64px;
+    height: 64px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+.desktop-folder .folder-name {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    margin-top: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    word-break: break-word;
+    border: 1px solid transparent;
+}
+.desktop-folder.selected .folder-name {
+    background: #0A78F2;
+    border-color: #0A78F2;
+}
+.desktop-folder .folder-name.editing {
+    display: none;
+}
+.desktop-folder .folder-name-input {
+    display: none;
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 4px;
+    padding: 1px 4px;
+    border: 1px solid #0A78F2;
+    border-radius: 4px;
+    outline: none;
+    color: black;
+}
+.desktop-folder .folder-name-input.active {
+    display: block;
+}
+
+/* 
  * Notch
  */
 .notch {
