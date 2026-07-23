@@ -1354,7 +1354,7 @@ body.edit-mode .cc-icon-circle.large {
     transform: translateX(-50%);
     width: 4px;
     height: 4px;
-    background: #ffffff; /* Light gray dot matching dark dock */
+    background: #ffffff;
     border-radius: 50%;
     opacity: 0;
     transition: opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
