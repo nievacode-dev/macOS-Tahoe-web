@@ -3,12 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Smoother macOS Dock Magnification ---
     const dock = document.querySelector('.dock');
     const wrappers = Array.from(document.querySelectorAll('.dock-icon-wrapper'));
-    
+
     // Lowered scale and height based on user request
-    const maxScale = 1.8; 
-    const maxDistance = 200; 
+    const maxScale = 1.8;
+    const maxDistance = 200;
     const baseWidth = 52;
-    
+
     dock.addEventListener('mousemove', (e) => {
         requestAnimationFrame(() => {
             wrappers.forEach(wrapper => {
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rect = wrapper.getBoundingClientRect();
                 const x = rect.left + rect.width / 2;
                 const distance = Math.abs(e.clientX - x);
-                
+
                 if (distance < maxDistance) {
                     const curve = (Math.cos((distance / maxDistance) * Math.PI) + 1) / 2;
                     const scale = 1 + (maxScale - 1) * curve;
@@ -51,32 +51,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     wrappers.forEach(wrapper => {
         wrapper.draggable = true;
-        
-        wrapper.addEventListener('dragstart', function(e) {
+
+        wrapper.addEventListener('dragstart', function (e) {
             draggedDockIcon = this;
             setTimeout(() => this.style.opacity = '0.5', 0);
         });
-        
-        wrapper.addEventListener('dragend', function() {
+
+        wrapper.addEventListener('dragend', function () {
             setTimeout(() => this.style.opacity = '1', 0);
             draggedDockIcon = null;
         });
-        
-        wrapper.addEventListener('dragover', function(e) {
-            e.preventDefault(); 
-        });
-        
-        wrapper.addEventListener('drop', function(e) {
+
+        wrapper.addEventListener('dragover', function (e) {
             e.preventDefault();
         });
-        
-        wrapper.addEventListener('dragenter', function(e) {
+
+        wrapper.addEventListener('drop', function (e) {
+            e.preventDefault();
+        });
+
+        wrapper.addEventListener('dragenter', function (e) {
             e.preventDefault();
             if (this !== draggedDockIcon && this.parentNode === draggedDockIcon.parentNode) {
                 const allIcons = Array.from(this.parentNode.children);
                 const draggedIndex = allIcons.indexOf(draggedDockIcon);
                 const thisIndex = allIcons.indexOf(this);
-                
+
                 if (draggedIndex < thisIndex) {
                     this.parentNode.insertBefore(draggedDockIcon, this.nextSibling);
                 } else {
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    
+
     // --- Clock ---
     const timeDisplay = document.querySelector('.date-time');
     function updateTime() {
@@ -136,13 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const dateOptions = { weekday: 'short', month: 'short', day: 'numeric' };
         lockDate.textContent = now.toLocaleDateString('en-US', dateOptions).replace(/,/g, '');
-        
+
         let hours = now.getHours();
         let minutes = now.getMinutes().toString().padStart(2, '0');
         hours = hours % 12 || 12;
         lockTime.textContent = `${hours}:${minutes}`;
     }
-    updateLockTime(); 
+    updateLockTime();
     setInterval(updateLockTime, 1000);
 
     // Unlock interactions
@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lockInput.focus();
         }
     });
-    
+
     if (lockBottom) {
         lockBottom.addEventListener('click', () => {
             lockBottom.classList.add('active');
@@ -177,23 +177,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const editBtn = document.querySelector('.cc-edit-btn');
     // Select all widgets that can be removed
     const editableWidgets = document.querySelectorAll('.control-center .cc-module, .control-center .cc-bottom-tools .cc-icon-circle.large, .control-center .cc-row-2 .cc-icon-circle.large');
-    
+
     // Inject remove badges into all editable widgets
     editableWidgets.forEach(widget => {
         const badge = document.createElement('div');
         badge.className = 'gw-badge remove-badge';
         badge.innerHTML = '<i class="fa-solid fa-minus"></i>';
-        
+
         // Ensure widget is positioned relatively for the absolute badge
         if (getComputedStyle(widget).position === 'static') {
             widget.style.position = 'relative';
         }
-        
+
         widget.appendChild(badge);
-        
+
         // Handle removal (hide the widget)
         badge.addEventListener('click', (e) => {
-            e.stopPropagation(); 
+            e.stopPropagation();
             widget.style.display = 'none';
         });
     });
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editBtn) {
         editBtn.addEventListener('click', () => {
             document.body.classList.toggle('edit-mode');
-            
+
             if (document.body.classList.contains('edit-mode')) {
                 editBtn.textContent = 'Done';
                 editBtn.classList.add('editing');
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addBadges.forEach(badge => {
         badge.addEventListener('click', (e) => {
             e.stopPropagation();
-            
+
             // For the replica, just find any hidden widget and bring it back to simulate adding
             const hiddenWidgets = Array.from(editableWidgets).filter(w => w.style.display === 'none');
             if (hiddenWidgets.length > 0) {
@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
             snapToGridEnabled = !snapToGridEnabled;
             if (snapCheck) snapCheck.style.opacity = snapToGridEnabled ? '1' : '0';
             closeAllOverlays();
-            
+
             // Re-snap existing folders if enabled
             if (snapToGridEnabled) {
                 document.querySelectorAll('.desktop-folder').forEach(folder => {
@@ -266,50 +266,50 @@ document.addEventListener('DOMContentLoaded', () => {
     function makeDraggable(element) {
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
-        
+
         element.addEventListener('mousedown', (e) => {
             // Don't drag if clicking on the input
             if (e.target.tagName === 'INPUT') return;
             if (e.button !== 0) return; // Only left click
-            
+
             isDragging = true;
-            
+
             startX = e.clientX;
             startY = e.clientY;
             initialLeft = parseInt(element.style.left) || element.offsetLeft;
             initialTop = parseInt(element.style.top) || element.offsetTop;
-            
+
             // Bring to front
             element.style.zIndex = 1000;
-            
+
             function onMouseMove(moveEvent) {
                 if (!isDragging) return;
                 const dx = moveEvent.clientX - startX;
                 const dy = moveEvent.clientY - startY;
-                
+
                 element.style.left = `${initialLeft + dx}px`;
                 element.style.top = `${initialTop + dy}px`;
             }
-            
+
             function onMouseUp(upEvent) {
                 if (!isDragging) return;
                 isDragging = false;
                 element.style.zIndex = 50; // reset
-                
+
                 document.removeEventListener('mousemove', onMouseMove);
                 document.removeEventListener('mouseup', onMouseUp);
-                
+
                 if (snapToGridEnabled) {
                     const gridSizeX = 90;
                     const gridSizeY = 110;
                     let currentLeft = parseInt(element.style.left) || 0;
                     let currentTop = parseInt(element.style.top) || 0;
-                    
+
                     element.style.left = `${Math.round(currentLeft / gridSizeX) * gridSizeX + 10}px`;
                     element.style.top = `${Math.round(currentTop / gridSizeY) * gridSizeY + 10}px`;
                 }
             }
-            
+
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
         });
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ensure menu doesn't go off-screen
         const menuWidth = 240;
         const menuHeight = 260; // approximate
-        
+
         if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
         if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
 
@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- New Folder Logic ---
-    window.createDesktopFolder = function(folderName = 'untitled folder', x = null, y = null) {
+    window.createDesktopFolder = function (folderName = 'untitled folder', x = null, y = null) {
         if (x === null) {
             x = parseInt(desktop.dataset.contextX) || 100;
             x = x - 40;
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const img = document.createElement('img');
         img.src = 'icons/folders/Folder.png';
         img.alt = 'Folder';
-        img.draggable = false; 
+        img.draggable = false;
 
         const nameSpan = document.createElement('span');
         nameSpan.className = 'folder-name';
@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nameInput.select();
             }
         });
-        
+
         return { folder, nameSpan, nameInput };
     };
 
@@ -424,10 +424,10 @@ document.addEventListener('DOMContentLoaded', () => {
             contextMenu.style.display = 'none';
 
             const { nameSpan, nameInput } = window.createDesktopFolder('untitled folder');
-            
+
             nameSpan.classList.add('editing');
             nameInput.classList.add('active');
-            
+
             setTimeout(() => {
                 nameInput.focus();
                 nameInput.select();
@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper to close all overlays
     function closeAllOverlays() {
         contextMenu.style.display = 'none';
-        
+
         if (wifiMenu) wifiMenu.style.display = 'none';
         if (spotlightSearch) spotlightSearch.classList.remove('active');
         if (siriOrb) siriOrb.classList.remove('active');
@@ -493,17 +493,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appleMenu) appleMenu.style.display = 'none';
         if (finderMenu) finderMenu.style.display = 'none';
         if (dummyMenu) dummyMenu.style.display = 'none';
-        
+
         if (wifiToggle) wifiToggle.classList.remove('active');
         if (spotlightToggle) spotlightToggle.classList.remove('active');
         if (siriToggle) siriToggle.classList.remove('active');
         if (datetimeToggle) datetimeToggle.classList.remove('active');
-        
+
         if (appleToggle) appleToggle.classList.remove('active');
         if (finderToggle) finderToggle.classList.remove('active');
         otherLeftToggles.forEach(t => t && t.classList.remove('active'));
     }
 
+    let menuOpenTimeout;
     let menuCloseTimeout;
 
     function setupMenuToggle(toggle, menu) {
@@ -511,9 +512,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         toggle.addEventListener('mouseenter', (e) => {
             clearTimeout(menuCloseTimeout);
+            clearTimeout(menuOpenTimeout);
+
+            const isAnyMenuOpen = Array.from(document.querySelectorAll('.top-dropdown')).some(m => m.style.display === 'flex');
+            const hoverDelay = isAnyMenuOpen ? 0 : 500;
+
+            menuOpenTimeout = setTimeout(() => {
+                const wasActive = menu.style.display === 'flex';
+                if (!wasActive) {
+                    closeAllOverlays();
+                    toggle.classList.add('active');
+                    menu.style.display = 'flex';
+                    const rect = toggle.getBoundingClientRect();
+                    menu.style.left = `${rect.left}px`;
+                }
+            }, hoverDelay);
+        });
+
+        toggle.addEventListener('mouseleave', () => {
+            clearTimeout(menuOpenTimeout);
+            menuCloseTimeout = setTimeout(() => {
+                menu.style.display = 'none';
+                toggle.classList.remove('active');
+            }, 300);
+        });
+
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearTimeout(menuOpenTimeout);
+            clearTimeout(menuCloseTimeout);
             const wasActive = menu.style.display === 'flex';
+            closeAllOverlays();
             if (!wasActive) {
-                closeAllOverlays();
                 toggle.classList.add('active');
                 menu.style.display = 'flex';
                 const rect = toggle.getBoundingClientRect();
@@ -521,18 +551,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        toggle.addEventListener('mouseleave', () => {
-            menuCloseTimeout = setTimeout(() => {
-                menu.style.display = 'none';
-                toggle.classList.remove('active');
-            }, 300);
-        });
-
         menu.addEventListener('mouseenter', () => {
             clearTimeout(menuCloseTimeout);
+            clearTimeout(menuOpenTimeout);
         });
 
         menu.addEventListener('mouseleave', () => {
+            clearTimeout(menuOpenTimeout);
             menuCloseTimeout = setTimeout(() => {
                 menu.style.display = 'none';
                 toggle.classList.remove('active');
@@ -551,7 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             const wasActive = wifiMenu.style.display === 'flex';
             closeAllOverlays();
-            
+
             if (!wasActive) {
                 wifiToggle.classList.add('active');
                 wifiMenu.style.display = 'flex';
@@ -568,7 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             const wasActive = spotlightSearch.classList.contains('active');
             closeAllOverlays();
-            
+
             if (!wasActive) {
                 spotlightToggle.classList.add('active');
                 spotlightSearch.classList.add('active');
@@ -582,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             const wasActive = siriOrb.classList.contains('active');
             closeAllOverlays();
-            
+
             if (!wasActive) {
                 siriToggle.classList.add('active');
                 siriOrb.classList.add('active');
@@ -595,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             const wasActive = notificationCenter.classList.contains('active');
             closeAllOverlays();
-            
+
             if (!wasActive) {
                 datetimeToggle.classList.add('active');
                 notificationCenter.classList.add('active');
@@ -605,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Close overlays on outside click
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('#context-menu') && 
+        if (!e.target.closest('#context-menu') &&
             !e.target.closest('#wifi-menu') &&
             !e.target.closest('#spotlight-search') &&
             !e.target.closest('#siri-orb') &&
@@ -682,15 +707,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aboutCloseBtn) {
         aboutCloseBtn.addEventListener('click', () => {
             aboutOverlay.classList.remove('show');
-        });
-    }
-
-    // Close by clicking the overlay background
-    if (aboutOverlay) {
-        aboutOverlay.addEventListener('click', (e) => {
-            if (e.target === aboutOverlay) {
-                aboutOverlay.classList.remove('show');
-            }
         });
     }
 });
