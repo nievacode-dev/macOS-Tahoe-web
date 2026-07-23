@@ -158,6 +158,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden; /* allow children like app-drawer-grid to scroll */
+    min-height: 0;   /* crucial for flex children to be scrollable */
 }
 
 .window-app-icon {
@@ -192,6 +194,19 @@
     height: 100%;
     align-content: start;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+
+.app-drawer-grid::-webkit-scrollbar {
+    width: 6px;
+}
+.app-drawer-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+.app-drawer-grid::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 3px;
 }
 
 .app-drawer-item {

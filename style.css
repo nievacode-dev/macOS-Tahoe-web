@@ -930,3 +930,148 @@ body.edit-mode .cc-icon-circle.large {
     border-radius: 1px;
     box-shadow: 1px 0 0 rgba(0,0,0,0.1);
 }
+
+/* =========================================
+   About This Mac — macOS Tahoe Dialog
+   ========================================= */
+.about-mac-overlay {
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.about-mac-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.about-mac-dialog {
+    position: absolute;
+    width: 310px;
+    background: #e3e3e6;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 0 0 0.5px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    user-select: none;
+    cursor: default;
+}
+
+.about-mac-overlay.show .about-mac-dialog {
+    transform: none;
+}
+
+/* Traffic lights for the About dialog */
+.about-mac-tl {
+    display: flex;
+    gap: 8px;
+    padding: 16px 16px 0 16px;
+}
+
+/* Hero area */
+.about-mac-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 24px 16px;
+    gap: 0;
+}
+
+.about-mac-monterey-chip {
+    width: auto;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.25));
+    margin-bottom: 20px;
+}
+
+.about-mac-model {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+
+.about-mac-model-sub {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.45);
+    font-weight: 600;
+}
+
+/* Info rows */
+.about-mac-info {
+    padding: 10px 24px 20px;
+}
+
+.about-mac-row {
+    display: grid;
+    grid-template-columns: 110px auto;
+    gap: 12px;
+    padding: 3px 0;
+    border-bottom: none;
+    font-size: 12px;
+}
+
+.about-mac-row:last-child {
+    border-bottom: none;
+}
+
+.about-mac-label {
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: 500;
+    text-align: right;
+}
+
+.about-mac-value {
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 500;
+    text-align: left;
+}
+
+/* Footer */
+.about-mac-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 0 24px 24px;
+    border-top: none;
+}
+
+.about-mac-more-btn {
+    background: rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 16px;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.8);
+    font-family: inherit;
+    transition: background 0.15s;
+    margin-bottom: 6px;
+}
+
+.about-mac-more-btn:hover {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.about-mac-regulatory {
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.4);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.about-mac-copyright {
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.4);
+    text-align: center;
+    line-height: 1.5;
+}

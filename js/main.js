@@ -618,4 +618,79 @@ document.addEventListener('DOMContentLoaded', () => {
             closeAllOverlays();
         }
     });
+
+    // --- About This Mac (macOS Tahoe) ---
+    const aboutOverlay = document.getElementById('about-mac-overlay');
+    const aboutDialog = document.getElementById('about-mac-dialog');
+    const aboutCloseBtn = document.getElementById('about-mac-close');
+
+    function centerAboutDialog() {
+        if (!aboutDialog) return;
+        const dialogWidth = aboutDialog.offsetWidth || 310;
+        const dialogHeight = aboutDialog.offsetHeight || 380;
+        aboutDialog.style.left = `${(window.innerWidth - dialogWidth) / 2}px`;
+        aboutDialog.style.top = `${(window.innerHeight - dialogHeight) / 2}px`;
+    }
+
+    // Find "About This Mac" item in apple menu
+    const appleMenuItems = document.querySelectorAll('#apple-menu .cm-item');
+    appleMenuItems.forEach(item => {
+        if (item.textContent.trim() === 'About This Mac') {
+            item.addEventListener('click', () => {
+                closeAllOverlays();
+                aboutOverlay.classList.add('show');
+                centerAboutDialog();
+            });
+        }
+    });
+
+    // Make About This Mac window draggable
+    if (aboutDialog) {
+        let isDraggingAbout = false;
+        let aboutDragOffsetX = 0;
+        let aboutDragOffsetY = 0;
+
+        aboutDialog.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button') || e.target.closest('.traffic-light') || e.target.closest('.about-mac-regulatory')) {
+                return;
+            }
+            if (e.button !== 0) return;
+
+            isDraggingAbout = true;
+            const rect = aboutDialog.getBoundingClientRect();
+            aboutDragOffsetX = e.clientX - rect.left;
+            aboutDragOffsetY = e.clientY - rect.top;
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDraggingAbout && aboutOverlay && aboutOverlay.classList.contains('show')) {
+                aboutDialog.style.left = `${e.clientX - aboutDragOffsetX}px`;
+                aboutDialog.style.top = `${e.clientY - aboutDragOffsetY}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDraggingAbout) {
+                isDraggingAbout = false;
+                document.body.style.userSelect = '';
+            }
+        });
+    }
+
+    // Close via traffic light
+    if (aboutCloseBtn) {
+        aboutCloseBtn.addEventListener('click', () => {
+            aboutOverlay.classList.remove('show');
+        });
+    }
+
+    // Close by clicking the overlay background
+    if (aboutOverlay) {
+        aboutOverlay.addEventListener('click', (e) => {
+            if (e.target === aboutOverlay) {
+                aboutOverlay.classList.remove('show');
+            }
+        });
+    }
 });
