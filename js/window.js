@@ -13,17 +13,63 @@ document.addEventListener('DOMContentLoaded', () => {
     let dragOffsetX = 0;
     let dragOffsetY = 0;
 
+    // Resizing state
+    let isResizing = false;
+    let activeResizeHandle = null;
+    let resizeStartRect = null;
+    let resizeStartX = 0;
+    let resizeStartY = 0;
+
     // Global drag listeners
     document.addEventListener('mousemove', (e) => {
-        if (isDragging && activeWindow && !activeWindow.classList.contains('maximized')) {
+        if (isResizing && activeWindow && !activeWindow.classList.contains('maximized')) {
+            const dx = e.clientX - resizeStartX;
+            const dy = e.clientY - resizeStartY;
+            
+            let newWidth = resizeStartRect.width;
+            let newHeight = resizeStartRect.height;
+            let newLeft = resizeStartRect.left;
+            let newTop = resizeStartRect.top;
+
+            if (activeResizeHandle.includes('n')) {
+                newHeight = resizeStartRect.height - dy;
+                newTop = resizeStartRect.top + dy;
+            }
+            if (activeResizeHandle.includes('s')) {
+                newHeight = resizeStartRect.height + dy;
+            }
+            if (activeResizeHandle.includes('e')) {
+                newWidth = resizeStartRect.width + dx;
+            }
+            if (activeResizeHandle.includes('w')) {
+                newWidth = resizeStartRect.width - dx;
+                newLeft = resizeStartRect.left + dx;
+            }
+            
+            const minW = 300;
+            const minH = 200;
+            
+            if (newWidth >= minW) {
+                activeWindow.style.width = `${newWidth}px`;
+                activeWindow.style.left = `${newLeft}px`;
+            }
+            if (newHeight >= minH) {
+                activeWindow.style.height = `${newHeight}px`;
+                activeWindow.style.top = `${newTop}px`;
+            }
+            
+            e.preventDefault();
+        } else if (isDragging && activeWindow && !activeWindow.classList.contains('maximized')) {
             activeWindow.style.left = `${e.clientX - dragOffsetX}px`;
             activeWindow.style.top = `${e.clientY - dragOffsetY}px`;
         }
     });
 
     document.addEventListener('mouseup', () => {
-        if (isDragging) {
+        if (isDragging || isResizing) {
             isDragging = false;
+            isResizing = false;
+            activeResizeHandle = null;
             activeWindow = null;
             document.body.style.userSelect = '';
         }
@@ -38,6 +84,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clone template
         const winNode = template.content.cloneNode(true);
         const macWindow = winNode.querySelector('.macos-window');
+
+        // Setup Resize Handles
+        const handles = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+        handles.forEach(dir => {
+            const handle = macWindow.querySelector(`.resize-${dir}`);
+            if (handle) {
+                handle.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    activeWindow = macWindow;
+                    activeResizeHandle = dir;
+                    resizeStartRect = macWindow.getBoundingClientRect();
+                    resizeStartX = e.clientX;
+                    resizeStartY = e.clientY;
+                    document.body.style.userSelect = 'none';
+                    bringToFront(macWindow);
+                    e.stopPropagation();
+                });
+            }
+        });
 
         // Setup content
         const windowTitle = macWindow.querySelector('.window-title');
