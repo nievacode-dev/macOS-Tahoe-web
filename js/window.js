@@ -7,6 +7,56 @@ document.addEventListener('DOMContentLoaded', () => {
     let highestZIndex = 50;
     const runningApps = {};
 
+    // File System Initialization
+    if (!window.mockFS) {
+        window.mockFS = {
+            '~': ['Desktop', 'Documents', 'Downloads', 'Music', 'Pictures'],
+            '~/Desktop': [],
+            '~/Documents': [],
+            '~/Downloads': [],
+            '~/Music': [],
+            '~/Pictures': [],
+            '/': ['Applications', 'Library', 'System', 'Users'],
+            '/Users': ['guest'],
+            '/Applications': ['Safari.app', 'Terminal.app', 'Finder.app', 'Messages.app', 'System Settings.app', 'App Store.app']
+        };
+        window.currentDir = '~';
+        
+        window.fsHelper = {
+            normalize: (p) => p.replace(/\/+$/, '') || '/',
+            createDir: (parentPath, name) => {
+                let p = window.fsHelper.normalize(parentPath);
+                if (!window.mockFS[p]) window.mockFS[p] = [];
+                if (!window.mockFS[p].includes(name)) {
+                    window.mockFS[p].push(name);
+                    window.mockFS[`${p === '/' ? '' : p}/${name}`] = [];
+                    return true;
+                }
+                return false;
+            },
+            rename: (parentPath, oldName, newName) => {
+                let p = window.fsHelper.normalize(parentPath);
+                if (!window.mockFS[p]) return false;
+                const idx = window.mockFS[p].indexOf(oldName);
+                if (idx !== -1) {
+                    window.mockFS[p][idx] = newName;
+                    const oldFullPath = `${p === '/' ? '' : p}/${oldName}`;
+                    const newFullPath = `${p === '/' ? '' : p}/${newName}`;
+                    const keys = Object.keys(window.mockFS);
+                    for (let key of keys) {
+                        if (key === oldFullPath || key.startsWith(oldFullPath + '/')) {
+                            const newKey = newFullPath + key.substring(oldFullPath.length);
+                            window.mockFS[newKey] = window.mockFS[key];
+                            delete window.mockFS[key];
+                        }
+                    }
+                    return true;
+                }
+                return false;
+            }
+        };
+    }
+
     // Dragging state
     let activeWindow = null;
     let isDragging = false;
@@ -110,47 +160,184 @@ document.addEventListener('DOMContentLoaded', () => {
         const sidebarItem = macWindow.querySelector('.sidebar-item.active');
 
         if (appName === 'Finder') {
-            windowTitle.textContent = 'Applications';
-            if (sidebarItem) {
-                sidebarItem.innerHTML = `<i class="fa-solid fa-layer-group"></i> Applications`;
-            }
-
-            const grid = document.createElement('div');
-            grid.className = 'app-drawer-grid';
-
-            const allApps = document.querySelectorAll('.dock-apps .dock-icon-wrapper');
-            allApps.forEach(app => {
-                const name = app.getAttribute('data-name');
-                const src = app.querySelector('img').src;
-
-                const item = document.createElement('div');
-                item.className = 'app-drawer-item';
-
-                const img = document.createElement('img');
-                img.src = src;
-                img.alt = name;
-                img.draggable = false;
-
-                const span = document.createElement('span');
-                span.textContent = name;
-                span.title = name; // Tooltip for long names
-
-                item.appendChild(img);
-                item.appendChild(span);
-
-                // Double click to launch the app
-                item.addEventListener('dblclick', () => {
-                    app.click(); // Trigger dock icon click logic
-                });
-
-                grid.appendChild(item);
-            });
-
-            windowBody.style.alignItems = 'flex-start';
+            macWindow.classList.add('finder-window');
+            windowBody.style.alignItems = 'stretch';
             windowBody.style.justifyContent = 'flex-start';
-            windowBody.style.padding = '0'; // Let grid handle padding
+            windowBody.style.padding = '0';
+            
+            let currentPath = '/Applications';
+            let history = [currentPath];
+            let historyIdx = 0;
+            let viewMode = 'grid';
+            
+            const titleBarLeft = macWindow.querySelector('.title-bar-left');
+            const titleBarRight = macWindow.querySelector('.title-bar-right');
+            
+            titleBarLeft.innerHTML = `
+                <div class="finder-nav-btns">
+                    <button class="finder-btn nav-back disabled"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="finder-btn nav-fwd disabled"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+                <span class="window-title">Applications</span>
+            `;
+            
+            titleBarRight.innerHTML = `
+                <div class="finder-view-btns">
+                    <button class="finder-btn view-grid active"><i class="fa-solid fa-border-all"></i></button>
+                    <button class="finder-btn view-list"><i class="fa-solid fa-list"></i></button>
+                </div>
+                <button class="finder-btn new-folder-btn" title="New Folder"><i class="fa-solid fa-folder-plus"></i></button>
+                <i class="fa-solid fa-magnifying-glass"></i>
+            `;
+            
+            const btnBack = titleBarLeft.querySelector('.nav-back');
+            const btnFwd = titleBarLeft.querySelector('.nav-fwd');
+            const btnGrid = titleBarRight.querySelector('.view-grid');
+            const btnList = titleBarRight.querySelector('.view-list');
+            const btnNewFolder = titleBarRight.querySelector('.new-folder-btn');
+            const titleSpan = titleBarLeft.querySelector('.window-title');
+            
+            const contentContainer = document.createElement('div');
             windowBody.innerHTML = '';
-            windowBody.appendChild(grid);
+            windowBody.appendChild(contentContainer);
+            
+            const render = () => {
+                const pathParts = currentPath.split('/');
+                let displayTitle = pathParts[pathParts.length - 1] || '/';
+                if (currentPath === '~') displayTitle = 'guest';
+                else if (currentPath === '~/Desktop') displayTitle = 'Desktop';
+                else if (currentPath.startsWith('~/')) displayTitle = currentPath.substring(2);
+                
+                titleSpan.textContent = displayTitle;
+                
+                btnBack.classList.toggle('disabled', historyIdx <= 0);
+                btnFwd.classList.toggle('disabled', historyIdx >= history.length - 1);
+                
+                const sidebarItems = macWindow.querySelectorAll('.sidebar-item');
+                sidebarItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.textContent.trim() === displayTitle) item.classList.add('active');
+                });
+                
+                contentContainer.innerHTML = '';
+                contentContainer.className = `finder-content ${viewMode}-view`;
+                
+                const items = window.mockFS[window.fsHelper.normalize(currentPath)] || [];
+                
+                items.forEach(name => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'finder-item';
+                    
+                    const isApp = name.endsWith('.app');
+                    let iconSrc = 'icons/folders/Folder.png';
+                    if (isApp) {
+                        const appName = name.replace('.app', '');
+                        iconSrc = `icons/apple/${appName}.png`;
+                    } else if (name.endsWith('.txt')) {
+                        iconSrc = 'icons/apple/Notes.png';
+                    }
+                    
+                    itemDiv.innerHTML = `
+                        <img src="${iconSrc}" alt="${name}" onerror="this.src='icons/folders/Folder.png'" draggable="false">
+                        <span class="finder-item-name">${name}</span>
+                    `;
+                    
+                    if (!isApp && !name.includes('.')) {
+                        itemDiv.addEventListener('dblclick', () => {
+                            let newPath = currentPath === '/' ? `/${name}` : `${currentPath}/${name}`;
+                            history = history.slice(0, historyIdx + 1);
+                            history.push(newPath);
+                            historyIdx++;
+                            currentPath = newPath;
+                            render();
+                        });
+                    }
+                    
+                    contentContainer.appendChild(itemDiv);
+                });
+            };
+            
+            const initiateRename = (itemDiv, oldName) => {
+                const nameSpan = itemDiv.querySelector('.finder-item-name');
+                if (!nameSpan) return;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'finder-rename-input';
+                input.value = oldName;
+                
+                itemDiv.replaceChild(input, nameSpan);
+                input.focus();
+                input.select();
+                
+                const saveRename = () => {
+                    const newName = input.value.trim() || oldName;
+                    if (newName !== oldName && !(window.mockFS[window.fsHelper.normalize(currentPath)] || []).includes(newName)) {
+                        window.fsHelper.rename(currentPath, oldName, newName);
+                    }
+                    render();
+                };
+                
+                input.addEventListener('blur', saveRename);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') input.blur();
+                    else if (e.key === 'Escape') { input.value = oldName; input.blur(); }
+                });
+            };
+            
+            btnBack.addEventListener('click', () => { if (historyIdx > 0) { historyIdx--; currentPath = history[historyIdx]; render(); } });
+            btnFwd.addEventListener('click', () => { if (historyIdx < history.length - 1) { historyIdx++; currentPath = history[historyIdx]; render(); } });
+            
+            btnGrid.addEventListener('click', () => { viewMode = 'grid'; btnGrid.classList.add('active'); btnList.classList.remove('active'); render(); });
+            btnList.addEventListener('click', () => { viewMode = 'list'; btnList.classList.add('active'); btnGrid.classList.remove('active'); render(); });
+            
+            btnNewFolder.addEventListener('click', () => {
+                let baseName = 'untitled folder';
+                let newName = baseName;
+                let counter = 1;
+                const items = window.mockFS[window.fsHelper.normalize(currentPath)] || [];
+                while (items.includes(newName)) {
+                    counter++;
+                    newName = `${baseName} ${counter}`;
+                }
+                if (window.fsHelper.createDir(currentPath, newName)) {
+                    render();
+                    setTimeout(() => {
+                        const allItems = contentContainer.querySelectorAll('.finder-item');
+                        const newItem = Array.from(allItems).find(el => el.querySelector('.finder-item-name').textContent === newName);
+                        if (newItem) initiateRename(newItem, newName);
+                    }, 50);
+                }
+            });
+            
+            const sidebarNav = macWindow.querySelectorAll('.sidebar-item');
+            sidebarNav.forEach(item => {
+                item.addEventListener('click', () => {
+                    const text = item.textContent.trim();
+                    let newPath = '~';
+                    if (text === 'Applications') newPath = '/Applications';
+                    else if (text === 'Downloads') newPath = '~/Downloads';
+                    else if (text === 'Desktop') newPath = '~/Desktop';
+                    
+                    if (currentPath !== newPath) {
+                        history = history.slice(0, historyIdx + 1);
+                        history.push(newPath);
+                        historyIdx++;
+                        currentPath = newPath;
+                        render();
+                    }
+                });
+            });
+            
+            contentContainer.addEventListener('contextmenu', (e) => {
+                const itemDiv = e.target.closest('.finder-item');
+                if (itemDiv) {
+                    e.preventDefault();
+                    const name = itemDiv.querySelector('.finder-item-name').textContent;
+                    initiateRename(itemDiv, name);
+                }
+            });
+            
+            render();
 
         } else if (appName === 'Terminal') {
             macWindow.classList.add('terminal-window');
@@ -177,17 +364,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const terminalContainer = document.createElement('div');
             terminalContainer.className = 'terminal-container';
-            
-            if (!window.mockFS) {
-                window.mockFS = {
-                    '~': ['Desktop', 'Documents', 'Downloads', 'Music', 'Pictures'],
-                    '~/Desktop': ['untitled folder'],
-                    '/': ['Applications', 'Library', 'System', 'Users'],
-                    '/Users': ['guest'],
-                    '/Applications': ['Safari.app', 'Terminal.app']
-                };
-                window.currentDir = '~';
-            }
             
             const printLine = (text) => {
                 const line = document.createElement('div');
@@ -366,7 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Drag logic on title bar
         titleBar.addEventListener('mousedown', (e) => {
             // Don't drag if clicking buttons
-            if (e.target.closest('.traffic-lights') || e.target.closest('.title-bar-left i') || e.target.closest('.title-bar-right i')) return;
+            if (e.target.closest('.traffic-lights') || e.target.closest('.title-bar-left i') || e.target.closest('.title-bar-right i') || e.target.closest('.finder-btn') || e.target.closest('button')) return;
 
             isDragging = true;
             activeWindow = macWindow;

@@ -201,32 +201,66 @@
     }
 }
 
-/* App Drawer Grid (Finder) */
-.app-drawer-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 24px;
-    padding: 24px;
+/* Finder Application */
+.finder-window .window-body {
+    background: #fff;
+}
+
+.finder-nav-btns, .finder-view-btns {
+    display: flex;
+    gap: 4px;
+}
+
+.finder-btn {
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    width: 28px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.finder-btn:hover:not(.disabled) {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.finder-btn.active {
+    background: rgba(0, 0, 0, 0.1);
+    color: #000;
+}
+
+.finder-btn.disabled {
+    color: #ccc;
+    cursor: default;
+}
+
+.finder-content {
     width: 100%;
     height: 100%;
-    align-content: start;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(0,0,0,0.2) transparent;
 }
 
-.app-drawer-grid::-webkit-scrollbar {
-    width: 6px;
-}
-.app-drawer-grid::-webkit-scrollbar-track {
-    background: transparent;
-}
-.app-drawer-grid::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.2);
-    border-radius: 3px;
+.finder-content::-webkit-scrollbar { width: 6px; }
+.finder-content::-webkit-scrollbar-track { background: transparent; }
+.finder-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 3px; }
+
+/* Grid View */
+.finder-content.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 24px;
+    padding: 24px;
+    align-content: start;
 }
 
-.app-drawer-item {
+.finder-content.grid-view .finder-item {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -237,11 +271,11 @@
     border-radius: 8px;
 }
 
-.app-drawer-item:hover {
+.finder-content.grid-view .finder-item:hover {
     background: rgba(0, 0, 0, 0.05);
 }
 
-.app-drawer-item img {
+.finder-content.grid-view .finder-item img {
     width: 64px;
     height: 64px;
     object-fit: contain;
@@ -249,11 +283,53 @@
     transition: transform 0.2s ease;
 }
 
-.app-drawer-item:hover img {
+.finder-content.grid-view .finder-item:hover img {
     transform: scale(1.05);
 }
 
-.app-drawer-item span {
+/* List View */
+.finder-content.list-view {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.finder-content.list-view .finder-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.finder-content.list-view .finder-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.finder-content.list-view .finder-item img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+/* Renaming Input */
+.finder-rename-input {
+    width: 100%;
+    font-size: 12px;
+    text-align: center;
+    border: 1px solid #007aff;
+    border-radius: 4px;
+    padding: 2px 4px;
+    outline: none;
+    background: rgba(255,255,255,0.9);
+}
+
+.finder-content.list-view .finder-rename-input {
+    text-align: left;
+}
+
+.finder-item-name {
     font-size: 12px;
     font-weight: 500;
     color: #333;
@@ -261,6 +337,9 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+.finder-content.list-view .finder-item-name {
+    max-width: none;
 }
 
 /* Terminal */
