@@ -291,3 +291,48 @@
     flex: 1;
     outline: none;
 }
+
+/* =========================================
+   Terminal Window Dark Theme Overrides
+   ========================================= */
+.macos-window.terminal-window {
+    background: #1e1e1e;
+    border: 1px solid rgba(0, 0, 0, 0.6);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.macos-window.terminal-window .title-bar {
+    background: #2a2a2b;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+    position: relative;
+    justify-content: center;
+}
+
+.macos-window.terminal-window .title-bar-left {
+    width: 100%;
+    justify-content: center;
+    position: relative;
+}
+
+.macos-window.terminal-window .traffic-lights {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0 16px;
+    height: auto;
+}
+
+.macos-window.terminal-window .window-title {
+    color: #e0e0e0;
+    font-weight: 600;
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.macos-window.terminal-window .terminal-container {
+    background-color: transparent; /* Use window background */
+    padding: 4px 8px;
+}

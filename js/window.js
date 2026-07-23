@@ -88,7 +88,23 @@ document.addEventListener('DOMContentLoaded', () => {
             windowBody.appendChild(grid);
 
         } else if (appName === 'Terminal') {
-            windowTitle.textContent = 'guest@macbook: ~';
+            macWindow.classList.add('terminal-window');
+            
+            // Hide sidebar and move traffic lights to the title bar
+            const sidebar = macWindow.querySelector('.sidebar');
+            const titleBarLeft = macWindow.querySelector('.title-bar-left');
+            const titleBarRight = macWindow.querySelector('.title-bar-right');
+            const trafficLights = macWindow.querySelector('.traffic-lights');
+            
+            if (sidebar) sidebar.style.display = 'none';
+            if (titleBarLeft) titleBarLeft.querySelectorAll('i').forEach(i => i.remove());
+            if (titleBarRight) titleBarRight.innerHTML = '';
+            
+            if (trafficLights && titleBarLeft) {
+                trafficLights.style.padding = '0 16px 0 0'; // Adjust padding for titlebar
+                titleBarLeft.insertBefore(trafficLights, titleBarLeft.firstChild);
+            }
+            
             windowBody.style.alignItems = 'stretch';
             windowBody.style.justifyContent = 'flex-start';
             windowBody.style.padding = '0';
@@ -184,12 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (window.mockFS[target]) window.currentDir = target;
                             else window.currentDir = `${window.currentDir}/${target}`;
                         } else {
-                            printLine(`cd: no such file or directory: ${target}`);
+                            printLine(`bash: cd: ${target}: No such file or directory`);
                         }
-                        windowTitle.textContent = `guest@macbook: ${window.currentDir}`;
                         break;
                     default:
-                        printLine(`zsh: command not found: ${cmd}`);
+                        printLine(`bash: ${cmd}: command not found`);
                 }
             };
             
@@ -199,7 +214,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const prompt = document.createElement('span');
                 prompt.className = 'terminal-prompt';
-                prompt.textContent = `guest@macbook ${window.currentDir.split('/').pop()} %`;
+                
+                const displayDir = window.currentDir === '/Users/guest' ? '~' : window.currentDir.split('/').pop() || '~';
+                prompt.textContent = `guest@MacBook-Pro ${displayDir} $ `;
                 
                 const input = document.createElement('input');
                 input.type = 'text';
@@ -228,7 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => input.focus(), 10);
             };
             
-            printLine('Last login: ' + new Date().toString().split(' GMT')[0] + ' on ttys000');
+            const dateStr = new Date().toString().split(' GMT')[0];
+            const cleanDate = dateStr.replace(/ \d{4} /, ' '); // simplify date
+            printLine(`Last login: ${cleanDate} on console`);
             createInputLine();
             
             terminalContainer.addEventListener('click', () => {
@@ -238,6 +257,20 @@ document.addEventListener('DOMContentLoaded', () => {
             
             windowBody.innerHTML = '';
             windowBody.appendChild(terminalContainer);
+            
+            // Dynamic resize for title bar
+            const updateTerminalTitle = () => {
+                const charWidth = 8;
+                const charHeight = 16;
+                const cols = Math.max(10, Math.floor(terminalContainer.clientWidth / charWidth));
+                const rows = Math.max(5, Math.floor(terminalContainer.clientHeight / charHeight));
+                windowTitle.innerHTML = `<i class="fa-solid fa-folder" style="color: #61A9F4; font-size: 13px; margin-right: 4px;"></i> guest — bash — ${cols}x${rows}`;
+            };
+            
+            const resizeObserver = new ResizeObserver(() => {
+                updateTerminalTitle();
+            });
+            resizeObserver.observe(terminalContainer);
             
         } else {
             windowTitle.textContent = appName;
