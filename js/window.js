@@ -242,7 +242,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="finder-item-name">${name}</span>
                     `;
                     
-                    if (!isApp && !name.includes('.')) {
+                    if (isApp) {
+                        itemDiv.addEventListener('dblclick', () => {
+                            const appName = name.replace('.app', '');
+                            const dockIcon = document.querySelector(`.dock-icon-wrapper[data-name="${appName}"]`);
+                            if (dockIcon) dockIcon.click();
+                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple/${appName}.png`, null);
+                        });
+                    } else if (!name.includes('.')) {
                         itemDiv.addEventListener('dblclick', () => {
                             let newPath = currentPath === '/' ? `/${name}` : `${currentPath}/${name}`;
                             history = history.slice(0, historyIdx + 1);
@@ -329,12 +336,99 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             contentContainer.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                
+                const existingMenu = document.getElementById('dynamic-finder-context');
+                if (existingMenu) existingMenu.remove();
+
                 const itemDiv = e.target.closest('.finder-item');
-                if (itemDiv) {
-                    e.preventDefault();
-                    const name = itemDiv.querySelector('.finder-item-name').textContent;
-                    initiateRename(itemDiv, name);
+                const isItem = !!itemDiv;
+                let itemName = isItem ? itemDiv.querySelector('.finder-item-name').textContent : null;
+                const isApp = itemName && itemName.endsWith('.app');
+
+                const menu = document.createElement('div');
+                menu.id = 'dynamic-finder-context';
+                menu.className = 'desktop-context-menu';
+                menu.style.display = 'flex';
+                menu.style.position = 'fixed';
+                menu.style.zIndex = '10000';
+                
+                let x = e.clientX;
+                let y = e.clientY;
+                const menuWidth = 150;
+                const menuHeight = isItem ? 120 : 40;
+                if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth;
+                if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight;
+                menu.style.left = `${x}px`;
+                menu.style.top = `${y}px`;
+                
+                if (isItem) {
+                    const openItem = document.createElement('div');
+                    openItem.className = 'cm-item';
+                    openItem.textContent = 'Open';
+                    openItem.onclick = () => {
+                        menu.remove();
+                        if (isApp) {
+                            const appName = itemName.replace('.app', '');
+                            const dockIcon = document.querySelector(`.dock-icon-wrapper[data-name="${appName}"]`);
+                            if (dockIcon) dockIcon.click();
+                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple/${appName}.png`, null);
+                        } else if (!itemName.includes('.')) {
+                            let newPath = currentPath === '/' ? `/${itemName}` : `${currentPath}/${itemName}`;
+                            history = history.slice(0, historyIdx + 1);
+                            history.push(newPath);
+                            historyIdx++;
+                            currentPath = newPath;
+                            render();
+                        }
+                    };
+                    menu.appendChild(openItem);
+
+                    const renameItem = document.createElement('div');
+                    renameItem.className = 'cm-item';
+                    renameItem.textContent = 'Rename';
+                    renameItem.onclick = () => {
+                        menu.remove();
+                        initiateRename(itemDiv, itemName);
+                    };
+                    menu.appendChild(renameItem);
+                    
+                    const deleteItem = document.createElement('div');
+                    deleteItem.className = 'cm-item';
+                    deleteItem.style.color = '#ff3b30';
+                    deleteItem.textContent = 'Delete';
+                    deleteItem.onclick = () => {
+                        menu.remove();
+                        if (window.mockFS[window.fsHelper.normalize(currentPath)]) {
+                            window.mockFS[window.fsHelper.normalize(currentPath)] = window.mockFS[window.fsHelper.normalize(currentPath)].filter(n => n !== itemName);
+                            render();
+                        }
+                    };
+                    menu.appendChild(deleteItem);
+                } else {
+                    const newItem = document.createElement('div');
+                    newItem.className = 'cm-item';
+                    newItem.textContent = 'New Folder';
+                    newItem.onclick = () => {
+                        menu.remove();
+                        btnNewFolder.click();
+                    };
+                    menu.appendChild(newItem);
                 }
+                
+                document.body.appendChild(menu);
+                
+                setTimeout(() => {
+                    const closeMenu = (evt) => {
+                        if (!menu.contains(evt.target)) {
+                            menu.remove();
+                            document.removeEventListener('click', closeMenu);
+                            document.removeEventListener('contextmenu', closeMenu);
+                        }
+                    };
+                    document.addEventListener('click', closeMenu);
+                    document.addEventListener('contextmenu', closeMenu);
+                }, 10);
             });
             
             render();
