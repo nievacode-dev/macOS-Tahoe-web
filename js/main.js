@@ -255,8 +255,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const gridSizeY = 110;
                     let currentLeft = parseInt(folder.style.left) || 0;
                     let currentTop = parseInt(folder.style.top) || 0;
-                    folder.style.left = `${Math.round(currentLeft / gridSizeX) * gridSizeX + 10}px`;
-                    folder.style.top = `${Math.round(currentTop / gridSizeY) * gridSizeY + 10}px`;
+                    const targetLeft = Math.round(currentLeft / gridSizeX) * gridSizeX + 10;
+                    const targetTop = Math.round(currentTop / gridSizeY) * gridSizeY + 10;
+                    
+                    folder.animate([
+                        { left: `${currentLeft}px`, top: `${currentTop}px` },
+                        { left: `${targetLeft}px`, top: `${targetTop}px` }
+                    ], { duration: 300, easing: 'ease-out' });
+                    
+                    folder.style.left = `${targetLeft}px`;
+                    folder.style.top = `${targetTop}px`;
                 });
             }
         });
@@ -305,8 +313,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     let currentLeft = parseInt(element.style.left) || 0;
                     let currentTop = parseInt(element.style.top) || 0;
 
-                    element.style.left = `${Math.round(currentLeft / gridSizeX) * gridSizeX + 10}px`;
-                    element.style.top = `${Math.round(currentTop / gridSizeY) * gridSizeY + 10}px`;
+                    const targetLeft = Math.round(currentLeft / gridSizeX) * gridSizeX + 10;
+                    const targetTop = Math.round(currentTop / gridSizeY) * gridSizeY + 10;
+
+                    element.animate([
+                        { left: `${currentLeft}px`, top: `${currentTop}px` },
+                        { left: `${targetLeft}px`, top: `${targetTop}px` }
+                    ], { duration: 300, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.1)' });
+
+                    element.style.left = `${targetLeft}px`;
+                    element.style.top = `${targetTop}px`;
                 }
             }
 

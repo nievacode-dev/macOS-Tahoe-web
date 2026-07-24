@@ -1382,17 +1382,14 @@ body.edit-mode .cc-icon-circle.large {
     position: fixed;
     inset: 0;
     background: transparent;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 9000;
-    opacity: 0;
-    pointer-events: none;
 }
 
 .about-mac-overlay.show {
-    opacity: 1;
-    pointer-events: none;
+    display: flex;
 }
 
 .about-mac-dialog {
