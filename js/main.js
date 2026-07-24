@@ -924,7 +924,7 @@ document.addEventListener('DOMContentLoaded', () => {
         aboutDialog.style.top = `${(window.innerHeight - dialogHeight) / 2}px`;
     }
 
-    // Find "About This Mac" and "Log Out Guest..." items in apple menu
+    // Find "About This Mac", "Restart...", "Lock Screen", and "Log Out Guest..." items in apple menu
     const appleMenuItems = document.querySelectorAll('#apple-menu .cm-item');
     appleMenuItems.forEach(item => {
         const text = item.textContent.trim();
@@ -933,6 +933,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeAllOverlays();
                 aboutOverlay.classList.add('show');
                 centerAboutDialog();
+            });
+        } else if (text === 'Restart...') {
+            item.addEventListener('click', () => {
+                window.location.reload();
+            });
+        } else if (text === 'Lock Screen') {
+            item.addEventListener('click', () => {
+                closeAllOverlays();
+                const lockscreen = document.getElementById('lockscreen');
+                if (lockscreen) {
+                    lockscreen.classList.remove('unlocked');
+                    const lockInput = document.getElementById('lock-input');
+                    if (lockInput) {
+                        lockInput.value = '';
+                    }
+                }
             });
         } else if (text === 'Log Out Guest...') {
             item.addEventListener('click', () => {
