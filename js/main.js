@@ -1,5 +1,23 @@
 // --- Main Interactions ---
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Boot Screen Animation ---
+    const bootScreen = document.getElementById('boot-screen');
+    const bootProgressBar = document.getElementById('boot-progress-bar');
+    
+    if (bootScreen && bootProgressBar) {
+        // Start progress bar animation after a short delay
+        setTimeout(() => {
+            bootProgressBar.style.width = '100%';
+        }, 100);
+
+        // Wait 10 seconds, then fade out boot screen
+        setTimeout(() => {
+            bootScreen.style.opacity = '0';
+            setTimeout(() => {
+                bootScreen.style.display = 'none';
+            }, 500); // Wait for fade transition (0.5s matching CSS)
+        }, 10000);
+    }
     // --- Smoother macOS Dock Magnification ---
     const dock = document.querySelector('.dock');
     const wrappers = Array.from(document.querySelectorAll('.dock-icon-wrapper'));

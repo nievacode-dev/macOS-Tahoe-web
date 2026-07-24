@@ -47,6 +47,44 @@ body {
     background-color: #000;
 }
 
+/* Boot Screen */
+.boot-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000;
+    z-index: 100000; /* above everything */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.boot-logo {
+    color: #ffffff;
+    font-size: 80px;
+    margin-bottom: 60px;
+}
+
+.boot-progress-container {
+    width: 200px;
+    height: 4px;
+    background-color: #333333;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.boot-progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: #ffffff;
+    border-radius: 4px;
+    transition: width 10s cubic-bezier(0.2, 0.0, 0.0, 1);
+}
+
 .desktop {
     width: 100vw;
     height: 100vh;
