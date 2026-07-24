@@ -668,15 +668,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="safari-address-bar" style="width: 100%; max-width: 450px; display: flex; align-items: center; background: var(--bg-color, rgba(0,0,0,0.05)); border-radius: 6px; padding: 4px 10px; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 1px 2px rgba(0,0,0,0.05) inset;">
                     <i class="fa-solid fa-lock" style="font-size: 10px; color: #888; margin-right: 8px;"></i>
                     <input type="text" class="safari-url-input" placeholder="Search or enter website name" style="border: none; background: transparent; width: 100%; outline: none; font-size: 13px; color: var(--text-color, #333);" value="https://www.google.com/">
-                    <i class="fa-solid fa-rotate-right safari-refresh" style="font-size: 11px; color: #888; cursor: pointer; margin-left: 8px;"></i>
+                    <i class="fa-solid fa-rotate-right safari-refresh" title="Reload Page" style="font-size: 11px; color: #888; cursor: pointer; margin-left: 8px;"></i>
                 </div>
             `;
-            
+
             titleBar.insertBefore(titleBarCenter, titleBarRight);
 
             if (titleBarRight) {
                 titleBarRight.innerHTML = `
-                    <i class="fa-solid fa-arrow-up-from-bracket" style="margin-right: 15px; cursor: pointer;"></i>
+                    <i class="fa-solid fa-arrow-up-right-from-square safari-open-external" title="Open in real browser tab" style="margin-right: 15px; cursor: pointer;"></i>
                     <i class="fa-solid fa-plus" style="cursor: pointer;"></i>
                 `;
             }
@@ -684,7 +684,8 @@ document.addEventListener('DOMContentLoaded', () => {
             windowBody.style.alignItems = 'stretch';
             windowBody.style.justifyContent = 'flex-start';
             windowBody.style.padding = '0';
-            windowBody.style.backgroundColor = '#fff'; // Default to white for web content
+            windowBody.style.backgroundColor = '#fff';
+            windowBody.style.position = 'relative';
 
             const iframe = document.createElement('iframe');
             iframe.className = 'safari-iframe';
@@ -692,28 +693,178 @@ document.addEventListener('DOMContentLoaded', () => {
             iframe.style.height = '100%';
             iframe.style.border = 'none';
             iframe.style.backgroundColor = '#fff';
-            // Start with Google (with igu=1 to bypass some iframe restrictions)
             iframe.src = 'https://www.google.com/webhp?igu=1';
+
+            // macOS Safari Refused to Connect Error Overlay
+            const errorOverlay = document.createElement('div');
+            errorOverlay.className = 'safari-error-overlay';
+            errorOverlay.style.cssText = 'position: absolute; inset: 0; background: #f8f9fa; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; z-index: 10; color: #1d1d1f;';
+            errorOverlay.innerHTML = `
+                <div style="font-size: 44px; margin-bottom: 16px; color: #86868b;"><i class="fa-solid fa-compass"></i></div>
+                <h2 style="font-size: 20px; font-weight: 600; margin: 0 0 8px 0; color: #1d1d1f;">Safari Can’t Open the Page</h2>
+                <p class="safari-error-msg" style="font-size: 13px; color: #6e6e73; max-width: 420px; margin: 0 0 24px 0; line-height: 1.5;">This site prevents inline embedding due to browser security restrictions (<code style="background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 4px;">X-Frame-Options</code>).</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                    <button class="safari-btn-external" style="background: #0071e3; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="margin-right: 6px;"></i> Open in New Tab
+                    </button>
+                    <button class="safari-btn-proxy" style="background: rgba(0,0,0,0.06); color: #1d1d1f; border: 1px solid rgba(0,0,0,0.1); padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                        <i class="fa-solid fa-shield-halved" style="margin-right: 6px;"></i> Try Proxy Mode
+                    </button>
+                    <button class="safari-btn-google" style="background: rgba(0,0,0,0.06); color: #1d1d1f; border: 1px solid rgba(0,0,0,0.1); padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">
+                        <i class="fa-brands fa-google" style="margin-right: 6px;"></i> Google Search
+                    </button>
+                </div>
+            `;
 
             windowBody.innerHTML = '';
             windowBody.appendChild(iframe);
+            windowBody.appendChild(errorOverlay);
 
             const urlInput = titleBarCenter.querySelector('.safari-url-input');
             const btnRefresh = titleBarCenter.querySelector('.safari-refresh');
+            const btnExternalHeader = titleBarRight ? titleBarRight.querySelector('.safari-open-external') : null;
 
-            const navigate = (url) => {
-                let finalUrl = url;
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    if (url.includes('.') && !url.includes(' ')) {
-                        finalUrl = 'https://' + url;
+            const btnExternal = errorOverlay.querySelector('.safari-btn-external');
+            const btnProxy = errorOverlay.querySelector('.safari-btn-proxy');
+            const btnGoogle = errorOverlay.querySelector('.safari-btn-google');
+
+            let currentRawUrl = 'https://www.google.com/';
+            let proxyIndex = 0;
+            const proxies = [
+                (u) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)
+            ];
+
+            const isDirectProtocol = (urlStr) => {
+                return (
+                    urlStr.startsWith('file:') ||
+                    urlStr.startsWith('data:') ||
+                    urlStr.startsWith('blob:') ||
+                    urlStr.startsWith('about:') ||
+                    urlStr.startsWith('ftp:') ||
+                    urlStr.startsWith('ws:') ||
+                    urlStr.startsWith('wss:')
+                );
+            };
+
+            const isLocalhostUrl = (urlStr) => {
+                try {
+                    const parsed = new URL(urlStr);
+                    const host = parsed.hostname;
+                    return (
+                        host === 'localhost' ||
+                        host === '127.0.0.1' ||
+                        host === '0.0.0.0' ||
+                        host === '::1' ||
+                        host.endsWith('.local') ||
+                        /^192\.168\.\d{1,3}\.\d{1,3}$/.test(host) ||
+                        /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(host) ||
+                        /^172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}$/.test(host)
+                    );
+                } catch (e) {
+                    return false;
+                }
+            };
+
+            const navigate = (url, proxyOverrideIndex = null) => {
+                let targetUrl = url.trim();
+
+                // Check if targetUrl already has a valid protocol/scheme (e.g. file:, data:, blob:, http:, https:, etc.)
+                const hasScheme = /^[a-zA-Z][a-zA-Z0-9+\-.]*:/i.test(targetUrl);
+
+                if (!hasScheme) {
+                    if (targetUrl.startsWith('/') || targetUrl.startsWith('~/')) {
+                        targetUrl = 'file://' + (targetUrl.startsWith('/') ? targetUrl : targetUrl.substring(1));
+                    } else if (/^(localhost|127\.0\.0\.1|0\.0\.0\.0|::1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:[0-9]+)?(\/.*)?$/i.test(targetUrl)) {
+                        targetUrl = 'http://' + targetUrl;
+                    } else if (targetUrl.includes('.') && !targetUrl.includes(' ')) {
+                        targetUrl = 'https://' + targetUrl;
                     } else {
-                        // Use Google Search as default engine
-                        finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(url) + '&igu=1';
+                        // Default to Google Search
+                        targetUrl = 'https://www.google.com/search?q=' + encodeURIComponent(targetUrl) + '&igu=1';
                     }
                 }
-                iframe.src = finalUrl;
-                urlInput.value = finalUrl;
+
+                currentRawUrl = targetUrl;
+                urlInput.value = targetUrl;
+                errorOverlay.style.display = 'none';
+
+                let finalIframeUrl = targetUrl;
+
+                // Handle file:/// for virtual filesystem (window.mockFS)
+                if (targetUrl.startsWith('file://')) {
+                    let localPath = targetUrl.replace(/^file:\/\//, '');
+                    if (!localPath.startsWith('/') && !localPath.startsWith('~')) localPath = '/' + localPath;
+                    const normPath = window.fsHelper ? window.fsHelper.normalize(localPath) : localPath;
+                    const mockItems = window.mockFS ? window.mockFS[normPath] : null;
+
+                    if (mockItems) {
+                        const htmlContent = `
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="UTF-8">
+                                <style>
+                                    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; padding: 24px; color: #1d1d1f; background: #fff; margin: 0; }
+                                    h2 { font-size: 18px; margin-top: 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
+                                    ul { list-style: none; padding: 0; margin: 0; }
+                                    li { padding: 10px 12px; border-bottom: 1px solid #f5f5f7; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+                                    li:hover { background: #f5f5f7; cursor: pointer; border-radius: 6px; }
+                                </style>
+                            </head>
+                            <body>
+                                <h2>📁 Directory Index of ${normPath}</h2>
+                                <ul>
+                                    ${mockItems.length === 0 ? '<li style="color:#86868b;">Folder is empty</li>' : mockItems.map(item => `<li>${item.endsWith('.app') ? '🚀' : item.includes('.') ? '📄' : '📁'} ${item}</li>`).join('')}
+                                </ul>
+                            </body>
+                            </html>
+                        `;
+                        iframe.srcdoc = htmlContent;
+                        return;
+                    } else {
+                        iframe.removeAttribute('srcdoc');
+                    }
+                } else {
+                    iframe.removeAttribute('srcdoc');
+                }
+
+                if (isDirectProtocol(targetUrl) || isLocalhostUrl(targetUrl)) {
+                    // Direct loading for local files, data URIs, blob URIs, about:blank, localhost, etc.
+                    finalIframeUrl = targetUrl;
+                } else if (targetUrl.includes('google.com')) {
+                    if (targetUrl.includes('google.com/search') && !targetUrl.includes('igu=1')) {
+                        finalIframeUrl = targetUrl + (targetUrl.includes('?') ? '&igu=1' : '?igu=1');
+                    } else if (!targetUrl.includes('igu=1')) {
+                        finalIframeUrl = 'https://www.google.com/webhp?igu=1';
+                    }
+                } else {
+                    // Automatically proxy external non-Google sites to bypass X-Frame-Options & CSP headers
+                    const pIdx = proxyOverrideIndex !== null ? proxyOverrideIndex : proxyIndex;
+                    finalIframeUrl = proxies[pIdx % proxies.length](targetUrl);
+                }
+
+                iframe.src = finalIframeUrl;
             };
+
+            if (btnExternalHeader) {
+                btnExternalHeader.addEventListener('click', () => {
+                    window.open(currentRawUrl, '_blank');
+                });
+            }
+
+            btnExternal.addEventListener('click', () => {
+                window.open(currentRawUrl, '_blank');
+            });
+
+            btnProxy.addEventListener('click', () => {
+                proxyIndex = (proxyIndex + 1) % proxies.length;
+                navigate(currentRawUrl, proxyIndex);
+            });
+
+            btnGoogle.addEventListener('click', () => {
+                const domain = currentRawUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+                navigate('https://www.google.com/search?q=' + encodeURIComponent(domain) + '&igu=1');
+            });
 
             urlInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -722,13 +873,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Select all text on click for easier typing
             urlInput.addEventListener('click', () => {
                 urlInput.select();
             });
 
             btnRefresh.addEventListener('click', () => {
-                iframe.src = iframe.src;
+                navigate(urlInput.value.trim());
             });
 
         } else {
