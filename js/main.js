@@ -654,10 +654,202 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!wasActive) {
                 spotlightToggle.classList.add('active');
                 spotlightSearch.classList.add('active');
-                setTimeout(() => spotlightInput.focus(), 100);
+                setTimeout(() => {
+                    spotlightInput.focus();
+                    spotlightInput.select();
+                }, 100);
             }
         });
     }
+
+    // --- Spotlight Search Engine ---
+    const spotlightResults = document.getElementById('spotlight-results');
+    const allApps = ['Safari', 'Terminal', 'Finder', 'Messages', 'System Settings', 'App Store', 'Maps', 'Photos', 'FaceTime', 'Calendar', 'Contacts', 'Reminders', 'Notes', 'Apple TV', 'Music', 'Podcasts'];
+    let currentResults = [];
+    let selectedIndex = -1;
+
+    function renderSpotlightResults() {
+        if (!spotlightResults) return;
+        spotlightResults.innerHTML = '';
+        if (currentResults.length === 0) {
+            spotlightResults.classList.remove('show');
+            return;
+        }
+        spotlightResults.classList.add('show');
+        
+        currentResults.forEach((result, idx) => {
+            const item = document.createElement('div');
+            item.className = 'spotlight-result-item' + (idx === selectedIndex ? ' selected' : '');
+            
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'spotlight-result-icon';
+            if (result.type === 'math') {
+                iconDiv.innerHTML = '<i class="fa-solid fa-calculator" style="font-size: 20px;"></i>';
+            } else {
+                const img = document.createElement('img');
+                img.src = result.icon;
+                img.onerror = () => { img.src = 'icons/folders/Folder.png'; };
+                iconDiv.appendChild(img);
+            }
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'spotlight-result-info';
+            
+            const title = document.createElement('span');
+            title.className = 'spotlight-result-title';
+            title.textContent = result.title;
+            
+            const subtitle = document.createElement('span');
+            subtitle.className = 'spotlight-result-subtitle';
+            subtitle.textContent = result.subtitle;
+
+            infoDiv.appendChild(title);
+            if (result.subtitle) infoDiv.appendChild(subtitle);
+
+            item.appendChild(iconDiv);
+            item.appendChild(infoDiv);
+
+            item.addEventListener('mouseenter', () => {
+                selectedIndex = idx;
+                renderSpotlightResults();
+            });
+            item.addEventListener('click', () => {
+                executeSpotlightResult(result);
+            });
+
+            spotlightResults.appendChild(item);
+        });
+    }
+
+    function executeSpotlightResult(result) {
+        closeAllOverlays();
+        if (spotlightInput) {
+            spotlightInput.value = '';
+            searchSpotlight('');
+        }
+
+        if (result.type === 'app') {
+            const dockIcon = document.querySelector(`.dock-icon-wrapper[data-name="${result.title}"]`);
+            if (dockIcon) dockIcon.click();
+            else if (typeof createWindow === 'function') createWindow(result.title, result.icon, null);
+        } else if (result.type === 'file') {
+            if (typeof createWindow === 'function') {
+                const parentPath = result.path.substring(0, result.path.lastIndexOf('/')) || '/';
+                window.currentDir = parentPath;
+                createWindow('Finder', 'icons/apple/Finder.png', null);
+            }
+        }
+    }
+
+    function searchSpotlight(query) {
+        query = query.trim().toLowerCase();
+        currentResults = [];
+        selectedIndex = -1;
+        if (!query) {
+            renderSpotlightResults();
+            return;
+        }
+
+        try {
+            if (/^[0-9+\-*/().\s]+$/.test(query)) {
+                const res = new Function('return ' + query)();
+                if (typeof res === 'number' && !isNaN(res)) {
+                    currentResults.push({
+                        title: res.toString(),
+                        subtitle: 'Calculator',
+                        type: 'math'
+                    });
+                }
+            }
+        } catch (e) {}
+
+        allApps.forEach(app => {
+            if (app.toLowerCase().includes(query)) {
+                currentResults.push({
+                    title: app,
+                    subtitle: 'Application',
+                    icon: `icons/apple/${app}.png`,
+                    type: 'app'
+                });
+            }
+        });
+
+        if (window.mockFS) {
+            const traverseFS = (path) => {
+                const items = window.mockFS[path] || [];
+                items.forEach(item => {
+                    if (item.toLowerCase().includes(query)) {
+                        const isApp = item.endsWith('.app');
+                        if (!isApp) {
+                            currentResults.push({
+                                title: item,
+                                subtitle: path === '/' ? '/' : path + '/' + item,
+                                icon: item.includes('.') ? 'icons/apple/Notes.png' : 'icons/folders/Folder.png',
+                                type: 'file',
+                                path: path === '/' ? '/' + item : path + '/' + item
+                            });
+                        }
+                    }
+                    const subPath = window.fsHelper ? window.fsHelper.normalize(path + '/' + item) : path + '/' + item;
+                    if (window.mockFS[subPath]) {
+                        traverseFS(subPath);
+                    }
+                });
+            };
+            traverseFS('~');
+            traverseFS('/');
+        }
+        
+        const seen = new Set();
+        currentResults = currentResults.filter(r => {
+            const key = r.title + r.subtitle;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        if (currentResults.length > 0) selectedIndex = 0;
+        renderSpotlightResults();
+    }
+
+    if (spotlightInput) {
+        spotlightInput.addEventListener('input', (e) => {
+            searchSpotlight(e.target.value);
+        });
+
+        spotlightInput.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (selectedIndex < currentResults.length - 1) selectedIndex++;
+                renderSpotlightResults();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (selectedIndex > 0) selectedIndex--;
+                renderSpotlightResults();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0 && selectedIndex < currentResults.length) {
+                    executeSpotlightResult(currentResults[selectedIndex]);
+                }
+            } else if (e.key === 'Escape') {
+                closeAllOverlays();
+                spotlightInput.value = '';
+                searchSpotlight('');
+            }
+        });
+    }
+
+    // Global shortcut Cmd+Space or Ctrl+Space
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            if (spotlightSearch && spotlightSearch.classList.contains('active')) {
+                closeAllOverlays();
+            } else if (spotlightToggle) {
+                spotlightToggle.click();
+            }
+        }
+    });
 
     if (siriToggle && siriOrb) {
         siriToggle.addEventListener('click', (e) => {
