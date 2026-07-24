@@ -382,6 +382,21 @@
             </div>
         </template>
 
+        <!-- Reset Warning Dialog -->
+        <div class="about-mac-overlay" id="reset-warning-overlay">
+            <div class="about-mac-dialog reset-dialog" id="reset-warning-dialog">
+                <div class="reset-dialog-icon">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #ff9f0a; font-size: 40px;"></i>
+                </div>
+                <div class="reset-dialog-title">Are you sure you want to reset?</div>
+                <div class="reset-dialog-msg">This will wipe all your saved data, files, and settings. This action cannot be undone.</div>
+                <div class="reset-dialog-buttons">
+                    <button class="reset-btn cancel" id="reset-cancel-btn">Cancel</button>
+                    <button class="reset-btn confirm" id="reset-confirm-btn">Wipe Data</button>
+                </div>
+            </div>
+        </div>
+
         <!-- About This Mac — macOS Tahoe -->
         <div class="about-mac-overlay" id="about-mac-overlay">
             <div class="about-mac-dialog" id="about-mac-dialog">

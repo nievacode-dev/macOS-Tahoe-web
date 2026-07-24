@@ -199,12 +199,38 @@ document.addEventListener('DOMContentLoaded', () => {
             lockForgot.addEventListener('mouseenter', () => lockForgot.style.color = '#ffffff');
             lockForgot.addEventListener('mouseleave', () => lockForgot.style.color = '#a1a1a6');
             
-            // Wipe data
+            // Show reset warning dialog
             lockForgot.addEventListener('click', () => {
-                localStorage.removeItem('macOSTahoe_Password');
-                localStorage.removeItem('macOSTahoe_FS');
-                localStorage.removeItem('macOSTahoe_DesktopIcons');
-                window.location.reload();
+                const resetWarningOverlay = document.getElementById('reset-warning-overlay');
+                const resetWarningDialog = document.getElementById('reset-warning-dialog');
+                const resetCancelBtn = document.getElementById('reset-cancel-btn');
+                const resetConfirmBtn = document.getElementById('reset-confirm-btn');
+                
+                if (resetWarningOverlay && resetWarningDialog) {
+                    resetWarningOverlay.classList.add('show');
+                    
+                    const dialogWidth = resetWarningDialog.offsetWidth || 280;
+                    const dialogHeight = resetWarningDialog.offsetHeight || 200;
+                    resetWarningDialog.style.left = `${(window.innerWidth - dialogWidth) / 2}px`;
+                    resetWarningDialog.style.top = `${(window.innerHeight - dialogHeight) / 2}px`;
+                    
+                    if (resetCancelBtn && !resetCancelBtn.dataset.initialized) {
+                        resetCancelBtn.dataset.initialized = 'true';
+                        resetCancelBtn.addEventListener('click', () => {
+                            resetWarningOverlay.classList.remove('show');
+                        });
+                    }
+                    
+                    if (resetConfirmBtn && !resetConfirmBtn.dataset.initialized) {
+                        resetConfirmBtn.dataset.initialized = 'true';
+                        resetConfirmBtn.addEventListener('click', () => {
+                            localStorage.removeItem('macOSTahoe_Password');
+                            localStorage.removeItem('macOSTahoe_FS');
+                            localStorage.removeItem('macOSTahoe_DesktopIcons');
+                            window.location.reload();
+                        });
+                    }
+                }
             });
         }
     }

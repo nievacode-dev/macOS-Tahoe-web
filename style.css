@@ -1487,14 +1487,20 @@ body.edit-mode .cc-icon-circle.large {
     position: fixed;
     inset: 0;
     background: transparent;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
 .about-mac-overlay.show {
-    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .about-mac-dialog {
@@ -1507,10 +1513,12 @@ body.edit-mode .cc-icon-circle.large {
     user-select: none;
     cursor: default;
     pointer-events: auto;
+    transform: scale(0.92);
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .about-mac-overlay.show .about-mac-dialog {
-    transform: none;
+    transform: scale(1);
 }
 
 /* Traffic lights for the About dialog */
@@ -1632,4 +1640,57 @@ body.edit-mode .cc-icon-circle.large {
 
 .shake {
     animation: shake 0.4s;
+}
+
+/* Reset Dialog */
+.reset-dialog {
+    width: 280px;
+    height: auto;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+.reset-dialog-icon {
+    margin-top: 10px;
+}
+.reset-dialog-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.85);
+}
+.reset-dialog-msg {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.6);
+    line-height: 1.4;
+}
+.reset-dialog-buttons {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+}
+.reset-btn {
+    flex: 1;
+    padding: 6px 0;
+    border-radius: 6px;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: filter 0.2s;
+}
+.reset-btn:hover {
+    filter: brightness(0.9);
+}
+.reset-btn.cancel {
+    background: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.8);
+}
+.reset-btn.confirm {
+    background: #ff3b30;
+    color: white;
 }
