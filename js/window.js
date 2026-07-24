@@ -1,13 +1,14 @@
-// --- Window Management ---
-document.addEventListener('DOMContentLoaded', () => {
-    const dockIcons = document.querySelectorAll('.dock-icon-wrapper');
-    const template = document.getElementById('window-template');
-    const desktop = document.querySelector('.desktop');
-
-    let highestZIndex = 50;
-    const runningApps = {};
-
-    // File System Initialization
+// File System Initialization
+if (!window.mockFS) {
+    const storedFS = localStorage.getItem('macOSTahoe_FS');
+    if (storedFS) {
+        try {
+            window.mockFS = JSON.parse(storedFS);
+        } catch (e) {
+            console.error("Failed to parse stored FS", e);
+        }
+    }
+    
     if (!window.mockFS) {
         window.mockFS = {
             '~': ['Desktop', 'Documents', 'Downloads', 'Music', 'Pictures'],
@@ -20,42 +21,57 @@ document.addEventListener('DOMContentLoaded', () => {
             '/Users': ['guest'],
             '/Applications': ['Safari.app', 'Terminal.app', 'Finder.app', 'Messages.app', 'System Settings.app', 'App Store.app']
         };
-        window.currentDir = '~';
-        
-        window.fsHelper = {
-            normalize: (p) => p.replace(/\/+$/, '') || '/',
-            createDir: (parentPath, name) => {
-                let p = window.fsHelper.normalize(parentPath);
-                if (!window.mockFS[p]) window.mockFS[p] = [];
-                if (!window.mockFS[p].includes(name)) {
-                    window.mockFS[p].push(name);
-                    window.mockFS[`${p === '/' ? '' : p}/${name}`] = [];
-                    return true;
-                }
-                return false;
-            },
-            rename: (parentPath, oldName, newName) => {
-                let p = window.fsHelper.normalize(parentPath);
-                if (!window.mockFS[p]) return false;
-                const idx = window.mockFS[p].indexOf(oldName);
-                if (idx !== -1) {
-                    window.mockFS[p][idx] = newName;
-                    const oldFullPath = `${p === '/' ? '' : p}/${oldName}`;
-                    const newFullPath = `${p === '/' ? '' : p}/${newName}`;
-                    const keys = Object.keys(window.mockFS);
-                    for (let key of keys) {
-                        if (key === oldFullPath || key.startsWith(oldFullPath + '/')) {
-                            const newKey = newFullPath + key.substring(oldFullPath.length);
-                            window.mockFS[newKey] = window.mockFS[key];
-                            delete window.mockFS[key];
-                        }
-                    }
-                    return true;
-                }
-                return false;
-            }
-        };
     }
+    window.currentDir = '~';
+    
+    window.fsHelper = {
+        save: () => {
+            localStorage.setItem('macOSTahoe_FS', JSON.stringify(window.mockFS));
+        },
+        normalize: (p) => p.replace(/\/+$/, '') || '/',
+        createDir: (parentPath, name) => {
+            let p = window.fsHelper.normalize(parentPath);
+            if (!window.mockFS[p]) window.mockFS[p] = [];
+            if (!window.mockFS[p].includes(name)) {
+                window.mockFS[p].push(name);
+                window.mockFS[`${p === '/' ? '' : p}/${name}`] = [];
+                window.fsHelper.save();
+                return true;
+            }
+            return false;
+        },
+        rename: (parentPath, oldName, newName) => {
+            let p = window.fsHelper.normalize(parentPath);
+            if (!window.mockFS[p]) return false;
+            const idx = window.mockFS[p].indexOf(oldName);
+            if (idx !== -1) {
+                window.mockFS[p][idx] = newName;
+                const oldFullPath = `${p === '/' ? '' : p}/${oldName}`;
+                const newFullPath = `${p === '/' ? '' : p}/${newName}`;
+                const keys = Object.keys(window.mockFS);
+                for (let key of keys) {
+                    if (key === oldFullPath || key.startsWith(oldFullPath + '/')) {
+                        const newKey = newFullPath + key.substring(oldFullPath.length);
+                        window.mockFS[newKey] = window.mockFS[key];
+                        delete window.mockFS[key];
+                    }
+                }
+                window.fsHelper.save();
+                return true;
+            }
+            return false;
+        }
+    };
+}
+
+// --- Window Management ---
+document.addEventListener('DOMContentLoaded', () => {
+    const dockIcons = document.querySelectorAll('.dock-icon-wrapper');
+    const template = document.getElementById('window-template');
+    const desktop = document.querySelector('.desktop');
+
+    let highestZIndex = 50;
+    const runningApps = {};
 
     // Dragging state
     let activeWindow = null;
@@ -401,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         menu.remove();
                         if (window.mockFS[window.fsHelper.normalize(currentPath)]) {
                             window.mockFS[window.fsHelper.normalize(currentPath)] = window.mockFS[window.fsHelper.normalize(currentPath)].filter(n => n !== itemName);
+                            window.fsHelper.save();
                             render();
                         }
                     };

@@ -241,6 +241,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const snapBtn = document.getElementById('snap-to-grid-btn');
     const snapCheck = document.getElementById('snap-check');
 
+    window.saveDesktopIconPositions = function() {
+        const positions = {};
+        document.querySelectorAll('.desktop-folder').forEach(folder => {
+            const name = folder.querySelector('.folder-name').textContent;
+            positions[name] = {
+                x: parseInt(folder.style.left) || 0,
+                y: parseInt(folder.style.top) || 0
+            };
+        });
+        localStorage.setItem('macOSTahoe_DesktopIcons', JSON.stringify(positions));
+    };
+
     if (snapBtn) {
         snapBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -248,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (snapCheck) snapCheck.style.opacity = snapToGridEnabled ? '1' : '0';
             closeAllOverlays();
 
-            // Re-snap existing folders if enabled
             if (snapToGridEnabled) {
                 document.querySelectorAll('.desktop-folder').forEach(folder => {
                     const gridSizeX = 90;
@@ -266,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     folder.style.left = `${targetLeft}px`;
                     folder.style.top = `${targetTop}px`;
                 });
+                setTimeout(window.saveDesktopIconPositions, 350);
             }
         });
     }
@@ -324,6 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     element.style.left = `${targetLeft}px`;
                     element.style.top = `${targetTop}px`;
                 }
+                setTimeout(window.saveDesktopIconPositions, 350);
             }
 
             document.addEventListener('mousemove', onMouseMove);
@@ -402,10 +415,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function finishRename() {
+            const oldName = nameSpan.textContent;
             const newName = nameInput.value.trim() || 'untitled folder';
             nameSpan.textContent = newName;
             nameSpan.classList.remove('editing');
             nameInput.classList.remove('active');
+
+            if (oldName !== newName && window.fsHelper && window.mockFS['~/Desktop'].includes(oldName)) {
+                window.fsHelper.rename('~/Desktop', oldName, newName);
+            }
+            window.saveDesktopIconPositions();
         }
 
         nameInput.addEventListener('blur', finishRename);
@@ -430,6 +449,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Double click to open in Finder
+        folder.addEventListener('dblclick', () => {
+            if (typeof createWindow === 'function') {
+                window.currentDir = '~/Desktop';
+                createWindow('Finder', 'icons/apple/Finder.png', null);
+            }
+        });
+
         return { folder, nameSpan, nameInput };
     };
 
@@ -439,7 +466,21 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             contextMenu.style.display = 'none';
 
-            const { nameSpan, nameInput } = window.createDesktopFolder('untitled folder');
+            let baseName = 'untitled folder';
+            let folderName = baseName;
+            let counter = 1;
+            const items = (window.mockFS && window.mockFS['~/Desktop']) ? window.mockFS['~/Desktop'] : [];
+            while (items.includes(folderName)) {
+                counter++;
+                folderName = `${baseName} ${counter}`;
+            }
+
+            if (window.fsHelper) {
+                window.fsHelper.createDir('~/Desktop', folderName);
+            }
+
+            const { nameSpan, nameInput } = window.createDesktopFolder(folderName);
+            window.saveDesktopIconPositions();
 
             nameSpan.classList.add('editing');
             nameInput.classList.add('active');
@@ -673,14 +714,21 @@ document.addEventListener('DOMContentLoaded', () => {
         aboutDialog.style.top = `${(window.innerHeight - dialogHeight) / 2}px`;
     }
 
-    // Find "About This Mac" item in apple menu
+    // Find "About This Mac" and "Log Out Guest..." items in apple menu
     const appleMenuItems = document.querySelectorAll('#apple-menu .cm-item');
     appleMenuItems.forEach(item => {
-        if (item.textContent.trim() === 'About This Mac') {
+        const text = item.textContent.trim();
+        if (text === 'About This Mac') {
             item.addEventListener('click', () => {
                 closeAllOverlays();
                 aboutOverlay.classList.add('show');
                 centerAboutDialog();
+            });
+        } else if (text === 'Log Out Guest...') {
+            item.addEventListener('click', () => {
+                localStorage.removeItem('macOSTahoe_FS');
+                localStorage.removeItem('macOSTahoe_DesktopIcons');
+                window.location.reload();
             });
         }
     });
@@ -725,4 +773,15 @@ document.addEventListener('DOMContentLoaded', () => {
             aboutOverlay.classList.remove('show');
         });
     }
+
+    // --- Load Desktop Icons on Startup ---
+    setTimeout(() => {
+        if (window.mockFS && window.mockFS['~/Desktop']) {
+            const savedPositions = JSON.parse(localStorage.getItem('macOSTahoe_DesktopIcons')) || {};
+            window.mockFS['~/Desktop'].forEach(itemName => {
+                const pos = savedPositions[itemName] || { x: null, y: null };
+                window.createDesktopFolder(itemName, pos.x, pos.y);
+            });
+        }
+    }, 100);
 });
