@@ -178,15 +178,81 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const lockHint = document.getElementById('lock-hint');
+    const lockForgot = document.getElementById('lock-forgot');
+
+    function initLockScreen() {
+        const savedPassword = localStorage.getItem('macOSTahoe_Password');
+        if (savedPassword) {
+            lockInput.placeholder = "Enter Password";
+            if (lockHint) lockHint.textContent = "Touch ID or Enter Password";
+            if (lockForgot) lockForgot.style.display = "block";
+        } else {
+            lockInput.placeholder = "Create Password";
+            if (lockHint) lockHint.textContent = "Enter a new password to use";
+            if (lockForgot) lockForgot.style.display = "none";
+        }
+        
+        // Setup forgot password hover and click
+        if (lockForgot && !lockForgot.dataset.initialized) {
+            lockForgot.dataset.initialized = 'true';
+            lockForgot.addEventListener('mouseenter', () => lockForgot.style.color = '#ffffff');
+            lockForgot.addEventListener('mouseleave', () => lockForgot.style.color = '#a1a1a6');
+            
+            // Wipe data
+            lockForgot.addEventListener('click', () => {
+                localStorage.removeItem('macOSTahoe_Password');
+                localStorage.removeItem('macOSTahoe_FS');
+                localStorage.removeItem('macOSTahoe_DesktopIcons');
+                window.location.reload();
+            });
+        }
+    }
+
+    function unlockScreen() {
+        lockscreen.classList.add('unlocked');
+        lockInput.value = '';
+        lockBottom.classList.remove('active');
+        lockInput.blur();
+    }
+    
     if (lockInput) {
+        initLockScreen();
+        
         lockInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                // Unlock!
-                lockscreen.classList.add('unlocked');
-                lockInput.value = '';
-                lockBottom.classList.remove('active');
-                // Remove focus to prevent ghost typing
-                lockInput.blur();
+                const inputValue = lockInput.value;
+                if (!inputValue) return;
+
+                const savedPassword = localStorage.getItem('macOSTahoe_Password');
+                
+                if (!savedPassword) {
+                    // Create new password
+                    localStorage.setItem('macOSTahoe_Password', inputValue);
+                    unlockScreen();
+                    initLockScreen(); // Update UI for next lock
+                } else {
+                    // Check password
+                    if (inputValue === savedPassword) {
+                        unlockScreen();
+                    } else {
+                        // Wrong password animation/hint
+                        lockInput.value = '';
+                        if (lockHint) {
+                            lockHint.textContent = "Incorrect password";
+                            lockHint.style.color = "#ff3b30";
+                        }
+                        lockInput.classList.add('shake');
+                        
+                        setTimeout(() => {
+                            lockInput.classList.remove('shake');
+                            if (lockHint) {
+                                lockHint.textContent = "Touch ID or Enter Password";
+                                lockHint.style.color = "";
+                            }
+                        }, 1000);
+                    }
+                }
             }
         });
     }
