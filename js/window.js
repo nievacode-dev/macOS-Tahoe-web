@@ -8,7 +8,7 @@ if (!window.mockFS) {
             console.error("Failed to parse stored FS", e);
         }
     }
-    
+
     if (!window.mockFS) {
         window.mockFS = {
             '~': ['Desktop', 'Documents', 'Downloads', 'Music', 'Pictures'],
@@ -23,7 +23,7 @@ if (!window.mockFS) {
         };
     }
     window.currentDir = '~';
-    
+
     window.fsHelper = {
         save: () => {
             localStorage.setItem('macOSTahoe_FS', JSON.stringify(window.mockFS));
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isResizing && activeWindow && !activeWindow.classList.contains('maximized')) {
             const dx = e.clientX - resizeStartX;
             const dy = e.clientY - resizeStartY;
-            
+
             let newWidth = resizeStartRect.width;
             let newHeight = resizeStartRect.height;
             let newLeft = resizeStartRect.left;
@@ -111,10 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 newWidth = resizeStartRect.width - dx;
                 newLeft = resizeStartRect.left + dx;
             }
-            
+
             const minW = 300;
             const minH = 200;
-            
+
             if (newWidth >= minW) {
                 activeWindow.style.width = `${newWidth}px`;
                 activeWindow.style.left = `${newLeft}px`;
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 activeWindow.style.height = `${newHeight}px`;
                 activeWindow.style.top = `${newTop}px`;
             }
-            
+
             e.preventDefault();
         } else if (isDragging && activeWindow && !activeWindow.classList.contains('maximized')) {
             activeWindow.style.left = `${e.clientX - dragOffsetX}px`;
@@ -133,6 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('mouseup', () => {
         if (isDragging || isResizing) {
+            if (activeWindow) {
+                const iframe = activeWindow.querySelector('iframe');
+                if (iframe) iframe.style.pointerEvents = 'auto';
+            }
             isDragging = false;
             isResizing = false;
             activeResizeHandle = null;
@@ -164,6 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     resizeStartX = e.clientX;
                     resizeStartY = e.clientY;
                     document.body.style.userSelect = 'none';
+                    const iframe = macWindow.querySelector('iframe');
+                    if (iframe) iframe.style.pointerEvents = 'none';
                     bringToFront(macWindow);
                     e.stopPropagation();
                 });
@@ -180,15 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
             windowBody.style.alignItems = 'stretch';
             windowBody.style.justifyContent = 'flex-start';
             windowBody.style.padding = '0';
-            
+
             let currentPath = '/Applications';
             let history = [currentPath];
             let historyIdx = 0;
             let viewMode = 'grid';
-            
+
             const titleBarLeft = macWindow.querySelector('.title-bar-left');
             const titleBarRight = macWindow.querySelector('.title-bar-right');
-            
+
             titleBarLeft.innerHTML = `
                 <div class="finder-nav-btns">
                     <button class="finder-btn nav-back disabled"><i class="fa-solid fa-chevron-left"></i></button>
@@ -196,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <span class="window-title">Applications</span>
             `;
-            
+
             titleBarRight.innerHTML = `
                 <div class="finder-view-btns">
                     <button class="finder-btn view-grid active"><i class="fa-solid fa-border-all"></i></button>
@@ -205,45 +211,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="finder-btn new-folder-btn" title="New Folder"><i class="fa-solid fa-folder-plus"></i></button>
                 <i class="fa-solid fa-magnifying-glass"></i>
             `;
-            
+
             const btnBack = titleBarLeft.querySelector('.nav-back');
             const btnFwd = titleBarLeft.querySelector('.nav-fwd');
             const btnGrid = titleBarRight.querySelector('.view-grid');
             const btnList = titleBarRight.querySelector('.view-list');
             const btnNewFolder = titleBarRight.querySelector('.new-folder-btn');
             const titleSpan = titleBarLeft.querySelector('.window-title');
-            
+
             const contentContainer = document.createElement('div');
             windowBody.innerHTML = '';
             windowBody.appendChild(contentContainer);
-            
+
             const render = () => {
                 const pathParts = currentPath.split('/');
                 let displayTitle = pathParts[pathParts.length - 1] || '/';
                 if (currentPath === '~') displayTitle = 'guest';
                 else if (currentPath === '~/Desktop') displayTitle = 'Desktop';
                 else if (currentPath.startsWith('~/')) displayTitle = currentPath.substring(2);
-                
+
                 titleSpan.textContent = displayTitle;
-                
+
                 btnBack.classList.toggle('disabled', historyIdx <= 0);
                 btnFwd.classList.toggle('disabled', historyIdx >= history.length - 1);
-                
+
                 const sidebarItems = macWindow.querySelectorAll('.sidebar-item');
                 sidebarItems.forEach(item => {
                     item.classList.remove('active');
                     if (item.textContent.trim() === displayTitle) item.classList.add('active');
                 });
-                
+
                 contentContainer.innerHTML = '';
                 contentContainer.className = `finder-content ${viewMode}-view`;
-                
+
                 const items = window.mockFS[window.fsHelper.normalize(currentPath)] || [];
-                
+
                 items.forEach(name => {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'finder-item';
-                    
+
                     const isApp = name.endsWith('.app');
                     let iconSrc = 'icons/folders/Folder.png';
                     if (isApp) {
@@ -252,12 +258,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (name.endsWith('.txt')) {
                         iconSrc = 'icons/apple/Notes.png';
                     }
-                    
+
                     itemDiv.innerHTML = `
                         <img src="${iconSrc}" alt="${name}" onerror="this.src='icons/folders/Folder.png'" draggable="false">
                         <span class="finder-item-name">${name}</span>
                     `;
-                    
+
                     if (isApp) {
                         itemDiv.addEventListener('dblclick', () => {
                             const appName = name.replace('.app', '');
@@ -275,11 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             render();
                         });
                     }
-                    
+
                     contentContainer.appendChild(itemDiv);
                 });
             };
-            
+
             const initiateRename = (itemDiv, oldName) => {
                 const nameSpan = itemDiv.querySelector('.finder-item-name');
                 if (!nameSpan) return;
@@ -287,11 +293,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.type = 'text';
                 input.className = 'finder-rename-input';
                 input.value = oldName;
-                
+
                 itemDiv.replaceChild(input, nameSpan);
                 input.focus();
                 input.select();
-                
+
                 const saveRename = () => {
                     const newName = input.value.trim() || oldName;
                     if (newName !== oldName && !(window.mockFS[window.fsHelper.normalize(currentPath)] || []).includes(newName)) {
@@ -299,20 +305,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     render();
                 };
-                
+
                 input.addEventListener('blur', saveRename);
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') input.blur();
                     else if (e.key === 'Escape') { input.value = oldName; input.blur(); }
                 });
             };
-            
+
             btnBack.addEventListener('click', () => { if (historyIdx > 0) { historyIdx--; currentPath = history[historyIdx]; render(); } });
             btnFwd.addEventListener('click', () => { if (historyIdx < history.length - 1) { historyIdx++; currentPath = history[historyIdx]; render(); } });
-            
+
             btnGrid.addEventListener('click', () => { viewMode = 'grid'; btnGrid.classList.add('active'); btnList.classList.remove('active'); render(); });
             btnList.addEventListener('click', () => { viewMode = 'list'; btnList.classList.add('active'); btnGrid.classList.remove('active'); render(); });
-            
+
             btnNewFolder.addEventListener('click', () => {
                 let baseName = 'untitled folder';
                 let newName = baseName;
@@ -331,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 50);
                 }
             });
-            
+
             const sidebarNav = macWindow.querySelectorAll('.sidebar-item');
             sidebarNav.forEach(item => {
                 item.addEventListener('click', () => {
@@ -340,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (text === 'Applications') newPath = '/Applications';
                     else if (text === 'Downloads') newPath = '~/Downloads';
                     else if (text === 'Desktop') newPath = '~/Desktop';
-                    
+
                     if (currentPath !== newPath) {
                         history = history.slice(0, historyIdx + 1);
                         history.push(newPath);
@@ -350,10 +356,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             });
-            
+
             contentContainer.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
-                
+
                 const existingMenu = document.getElementById('dynamic-finder-context');
                 if (existingMenu) existingMenu.remove();
 
@@ -368,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 menu.style.display = 'flex';
                 menu.style.position = 'fixed';
                 menu.style.zIndex = '10000';
-                
+
                 let x = e.clientX;
                 let y = e.clientY;
                 const menuWidth = 150;
@@ -377,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight;
                 menu.style.left = `${x}px`;
                 menu.style.top = `${y}px`;
-                
+
                 if (isItem) {
                     const openItem = document.createElement('div');
                     openItem.className = 'cm-item';
@@ -408,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         initiateRename(itemDiv, itemName);
                     };
                     menu.appendChild(renameItem);
-                    
+
                     const deleteItem = document.createElement('div');
                     deleteItem.className = 'cm-item';
                     deleteItem.style.color = '#ff3b30';
@@ -432,9 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     menu.appendChild(newItem);
                 }
-                
+
                 document.body.appendChild(menu);
-                
+
                 setTimeout(() => {
                     const closeMenu = (evt) => {
                         if (!menu.contains(evt.target)) {
@@ -447,35 +453,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.addEventListener('contextmenu', closeMenu);
                 }, 10);
             });
-            
+
             render();
 
         } else if (appName === 'Terminal') {
             macWindow.classList.add('terminal-window');
-            
+
             // Hide sidebar and move traffic lights to the title bar
             const sidebar = macWindow.querySelector('.sidebar');
             const titleBarLeft = macWindow.querySelector('.title-bar-left');
             const titleBarRight = macWindow.querySelector('.title-bar-right');
             const trafficLights = macWindow.querySelector('.traffic-lights');
-            
+
             if (sidebar) sidebar.style.display = 'none';
             if (titleBarLeft) titleBarLeft.querySelectorAll('i').forEach(i => i.remove());
             if (titleBarRight) titleBarRight.innerHTML = '';
-            
+
             if (trafficLights && titleBarLeft) {
                 trafficLights.style.padding = '0 16px 0 0'; // Adjust padding for titlebar
                 titleBarLeft.insertBefore(trafficLights, titleBarLeft.firstChild);
             }
-            
+
             windowBody.style.alignItems = 'stretch';
             windowBody.style.justifyContent = 'flex-start';
             windowBody.style.padding = '0';
             if (sidebarItem) sidebarItem.innerHTML = `<i class="fa-solid fa-terminal"></i> Terminal`;
-            
+
             const terminalContainer = document.createElement('div');
             terminalContainer.className = 'terminal-container';
-            
+
             const printLine = (text) => {
                 const line = document.createElement('div');
                 line.className = 'terminal-line terminal-output';
@@ -488,8 +494,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const args = cmdStr.trim().split(/\s+/);
                 const cmd = args[0];
                 if (!cmd) return;
-                
-                switch(cmd) {
+
+                switch (cmd) {
                     case 'echo':
                         printLine(args.slice(1).join(' '));
                         break;
@@ -508,11 +514,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         const newDir = args[1];
                         if (newDir) {
                             if (!window.mockFS[window.currentDir]) window.mockFS[window.currentDir] = [];
-                            
+
                             if (!window.mockFS[window.currentDir].includes(newDir)) {
                                 window.mockFS[window.currentDir].push(newDir);
                                 window.mockFS[`${window.currentDir}/${newDir}`] = [];
-                                
+
                                 // Sync with Desktop UI
                                 if (window.currentDir === '~/Desktop' || window.currentDir === '/Users/guest/Desktop') {
                                     if (window.createDesktopFolder) {
@@ -559,57 +565,57 @@ document.addEventListener('DOMContentLoaded', () => {
                         printLine(`bash: ${cmd}: command not found`);
                 }
             };
-            
+
             const createInputLine = () => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'terminal-line terminal-input-wrapper';
-                
+
                 const prompt = document.createElement('span');
                 prompt.className = 'terminal-prompt';
-                
+
                 const displayDir = window.currentDir === '/Users/guest' ? '~' : window.currentDir.split('/').pop() || '~';
                 prompt.textContent = `guest@MacBook-Pro ${displayDir} $ `;
-                
+
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'terminal-input';
                 input.autocomplete = 'off';
-                
+
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                         const cmd = input.value;
                         const staticText = document.createElement('div');
                         staticText.className = 'terminal-output';
                         staticText.textContent = cmd;
-                        
+
                         wrapper.replaceChild(staticText, input);
                         wrapper.classList.remove('terminal-input-wrapper');
-                        
+
                         executeCommand(cmd);
                         createInputLine();
                     }
                 });
-                
+
                 wrapper.appendChild(prompt);
                 wrapper.appendChild(input);
                 terminalContainer.appendChild(wrapper);
-                
+
                 setTimeout(() => input.focus(), 10);
             };
-            
+
             const dateStr = new Date().toString().split(' GMT')[0];
             const cleanDate = dateStr.replace(/ \d{4} /, ' '); // simplify date
             printLine(`Last login: ${cleanDate} on console`);
             createInputLine();
-            
+
             terminalContainer.addEventListener('click', () => {
                 const activeInput = terminalContainer.querySelector('.terminal-input');
                 if (activeInput) activeInput.focus();
             });
-            
+
             windowBody.innerHTML = '';
             windowBody.appendChild(terminalContainer);
-            
+
             // Dynamic resize for title bar
             const updateTerminalTitle = () => {
                 const charWidth = 8;
@@ -618,12 +624,113 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rows = Math.max(5, Math.floor(terminalContainer.clientHeight / charHeight));
                 windowTitle.innerHTML = `<i class="fa-solid fa-folder" style="color: #61A9F4; font-size: 13px; margin-right: 4px;"></i> guest — bash — ${cols}x${rows}`;
             };
-            
+
             const resizeObserver = new ResizeObserver(() => {
                 updateTerminalTitle();
             });
             resizeObserver.observe(terminalContainer);
+
+        } else if (appName === 'Safari') {
+            macWindow.classList.add('safari-window');
+
+            // Hide sidebar and adjust layout
+            const sidebar = macWindow.querySelector('.sidebar');
+            const titleBarLeft = macWindow.querySelector('.title-bar-left');
+            const titleBarRight = macWindow.querySelector('.title-bar-right');
+            const titleBar = macWindow.querySelector('.title-bar');
+            const trafficLights = macWindow.querySelector('.traffic-lights');
+
+            if (sidebar) sidebar.style.display = 'none';
+
+            if (titleBarLeft) {
+                titleBarLeft.innerHTML = '';
+                if (trafficLights) {
+                    trafficLights.style.padding = '0 16px 0 0';
+                    titleBarLeft.appendChild(trafficLights);
+                }
+                titleBarLeft.innerHTML += `
+                    <div class="finder-nav-btns" style="margin-left: 10px;">
+                        <button class="finder-btn nav-back" style="opacity: 0.5;"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button class="finder-btn nav-fwd" style="opacity: 0.5;"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <button class="finder-btn" style="margin-left: 10px;"><i class="fa-solid fa-sidebar"></i></button>
+                `;
+            }
+
+            const titleBarCenter = document.createElement('div');
+            titleBarCenter.className = 'title-bar-center safari-address-container';
+            titleBarCenter.style.flex = '1';
+            titleBarCenter.style.display = 'flex';
+            titleBarCenter.style.justifyContent = 'center';
+            titleBarCenter.style.padding = '0 20px';
+
+            titleBarCenter.innerHTML = `
+                <div class="safari-address-bar" style="width: 100%; max-width: 450px; display: flex; align-items: center; background: var(--bg-color, rgba(0,0,0,0.05)); border-radius: 6px; padding: 4px 10px; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 1px 2px rgba(0,0,0,0.05) inset;">
+                    <i class="fa-solid fa-lock" style="font-size: 10px; color: #888; margin-right: 8px;"></i>
+                    <input type="text" class="safari-url-input" placeholder="Search or enter website name" style="border: none; background: transparent; width: 100%; outline: none; font-size: 13px; color: var(--text-color, #333);" value="https://www.google.com/">
+                    <i class="fa-solid fa-rotate-right safari-refresh" style="font-size: 11px; color: #888; cursor: pointer; margin-left: 8px;"></i>
+                </div>
+            `;
             
+            titleBar.insertBefore(titleBarCenter, titleBarRight);
+
+            if (titleBarRight) {
+                titleBarRight.innerHTML = `
+                    <i class="fa-solid fa-arrow-up-from-bracket" style="margin-right: 15px; cursor: pointer;"></i>
+                    <i class="fa-solid fa-plus" style="cursor: pointer;"></i>
+                `;
+            }
+
+            windowBody.style.alignItems = 'stretch';
+            windowBody.style.justifyContent = 'flex-start';
+            windowBody.style.padding = '0';
+            windowBody.style.backgroundColor = '#fff'; // Default to white for web content
+
+            const iframe = document.createElement('iframe');
+            iframe.className = 'safari-iframe';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.style.backgroundColor = '#fff';
+            // Start with Google (with igu=1 to bypass some iframe restrictions)
+            iframe.src = 'https://www.google.com/webhp?igu=1';
+
+            windowBody.innerHTML = '';
+            windowBody.appendChild(iframe);
+
+            const urlInput = titleBarCenter.querySelector('.safari-url-input');
+            const btnRefresh = titleBarCenter.querySelector('.safari-refresh');
+
+            const navigate = (url) => {
+                let finalUrl = url;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    if (url.includes('.') && !url.includes(' ')) {
+                        finalUrl = 'https://' + url;
+                    } else {
+                        // Use Google Search as default engine
+                        finalUrl = 'https://www.google.com/search?q=' + encodeURIComponent(url) + '&igu=1';
+                    }
+                }
+                iframe.src = finalUrl;
+                urlInput.value = finalUrl;
+            };
+
+            urlInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    navigate(urlInput.value.trim());
+                    urlInput.blur();
+                }
+            });
+
+            // Select all text on click for easier typing
+            urlInput.addEventListener('click', () => {
+                urlInput.select();
+            });
+
+            btnRefresh.addEventListener('click', () => {
+                iframe.src = iframe.src;
+            });
+
         } else {
             windowTitle.textContent = appName;
             windowBody.style.alignItems = 'center';
@@ -652,8 +759,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Drag logic on title bar
         titleBar.addEventListener('mousedown', (e) => {
-            // Don't drag if clicking buttons
-            if (e.target.closest('.traffic-lights') || e.target.closest('.title-bar-left i') || e.target.closest('.title-bar-right i') || e.target.closest('.finder-btn') || e.target.closest('button')) return;
+            // Don't drag if clicking buttons or inputs
+            if (e.target.closest('.traffic-lights') || e.target.closest('.title-bar-left i') || e.target.closest('.title-bar-right i') || e.target.closest('.finder-btn') || e.target.closest('button') || e.target.closest('input')) return;
 
             isDragging = true;
             activeWindow = macWindow;
@@ -664,6 +771,8 @@ document.addEventListener('DOMContentLoaded', () => {
             dragOffsetY = e.clientY - rect.top;
 
             document.body.style.userSelect = 'none';
+            const iframe = macWindow.querySelector('iframe');
+            if (iframe) iframe.style.pointerEvents = 'none';
         });
 
         // Window actions
