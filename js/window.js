@@ -881,6 +881,217 @@ document.addEventListener('DOMContentLoaded', () => {
                 navigate(urlInput.value.trim());
             });
 
+        } else if (appName === 'System Settings') {
+            macWindow.classList.add('settings-window');
+            
+            // Adjust sidebar and main structure
+            const sidebar = macWindow.querySelector('.sidebar');
+            const titleBar = macWindow.querySelector('.title-bar');
+            const trafficLights = macWindow.querySelector('.traffic-lights');
+            
+            // Move traffic lights to the sidebar top
+            sidebar.innerHTML = '';
+            sidebar.appendChild(trafficLights);
+            
+            // Add search and navigation to sidebar
+            const sidebarContent = document.createElement('div');
+            sidebarContent.innerHTML = `
+                <div class="settings-search-container">
+                    <div class="settings-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Search">
+                    </div>
+                </div>
+                <div class="settings-sidebar-group">
+                    <div class="settings-sidebar-item" data-tab="wi-fi">
+                        <div class="settings-icon" style="background: #007aff;"><i class="fa-solid fa-wifi"></i></div>
+                        Wi-Fi
+                    </div>
+                    <div class="settings-sidebar-item" data-tab="bluetooth">
+                        <div class="settings-icon" style="background: #007aff;"><i class="fa-brands fa-bluetooth-b"></i></div>
+                        Bluetooth
+                    </div>
+                    <div class="settings-sidebar-item" data-tab="network">
+                        <div class="settings-icon" style="background: #007aff;"><i class="fa-solid fa-network-wired"></i></div>
+                        Network
+                    </div>
+                </div>
+                <div class="settings-sidebar-group">
+                    <div class="settings-sidebar-item active" data-tab="general">
+                        <div class="settings-icon" style="background: #8e8e93;"><i class="fa-solid fa-gear"></i></div>
+                        General
+                    </div>
+                    <div class="settings-sidebar-item" data-tab="appearance">
+                        <div class="settings-icon" style="background: #5856d6;"><i class="fa-solid fa-circle-half-stroke"></i></div>
+                        Appearance
+                    </div>
+                    <div class="settings-sidebar-item" data-tab="control-center">
+                        <div class="settings-icon" style="background: #8e8e93;"><i class="fa-solid fa-sliders"></i></div>
+                        Control Center
+                    </div>
+                    <div class="settings-sidebar-item" data-tab="siri">
+                        <div class="settings-icon" style="background: #34c759;"><img src="icons/apple/Siri.png" style="width:14px; filter: brightness(0) invert(1);"></div>
+                        Siri & Spotlight
+                    </div>
+                </div>
+            `;
+            sidebar.appendChild(sidebarContent);
+            
+            // Reconfigure main content
+            const mainContent = macWindow.querySelector('.main-content');
+            mainContent.innerHTML = `
+                <div class="settings-main-header">General</div>
+                <div class="settings-main-body"></div>
+            `;
+            
+            const settingsBody = mainContent.querySelector('.settings-main-body');
+            const settingsHeader = mainContent.querySelector('.settings-main-header');
+            
+            // Tab content templates
+            const tabContents = {
+                'wi-fi': `
+                    <div class="settings-section">
+                        <div class="settings-row">
+                            <div class="settings-row-left">
+                                <div class="settings-row-title">Wi-Fi</div>
+                            </div>
+                            <div class="settings-row-right">
+                                <label class="switch settings-toggle">
+                                    <input type="checkbox" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <div class="settings-row">
+                            <div class="settings-row-left">
+                                <div>
+                                    <div class="settings-row-title">Home Network</div>
+                                    <div class="settings-row-subtitle">Connected</div>
+                                </div>
+                            </div>
+                            <div class="settings-row-right">
+                                <i class="fa-solid fa-lock"></i>
+                                <i class="fa-solid fa-circle-info" style="color: #007aff; font-size: 16px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                'general': `
+                    <div class="settings-section">
+                        <div class="settings-row">
+                            <div class="settings-row-left">
+                                <div class="settings-row-title">About</div>
+                            </div>
+                            <div class="settings-row-right">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-row-left">
+                                <div class="settings-row-title">Software Update</div>
+                            </div>
+                            <div class="settings-row-right">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <div class="settings-row">
+                            <div class="settings-row-left">
+                                <div class="settings-row-title">AirDrop & Handoff</div>
+                            </div>
+                            <div class="settings-row-right">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-row-left">
+                                <div class="settings-row-title">Login Items</div>
+                            </div>
+                            <div class="settings-row-right">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                'appearance': `
+                    <div class="settings-section">
+                        <div class="settings-row" style="padding: 20px;">
+                            <div style="display: flex; gap: 20px; justify-content: center; width: 100%;">
+                                <div style="text-align: center; cursor: pointer;">
+                                    <div style="width: 80px; height: 50px; background: #f0f0f0; border-radius: 6px; border: 2px solid #007aff; margin-bottom: 8px;"></div>
+                                    <span style="font-size: 12px;">Light</span>
+                                </div>
+                                <div style="text-align: center; cursor: pointer;">
+                                    <div style="width: 80px; height: 50px; background: #222; border-radius: 6px; border: 2px solid transparent; margin-bottom: 8px;"></div>
+                                    <span style="font-size: 12px;">Dark</span>
+                                </div>
+                                <div style="text-align: center; cursor: pointer;">
+                                    <div style="width: 80px; height: 50px; background: linear-gradient(to right, #f0f0f0 50%, #222 50%); border-radius: 6px; border: 2px solid transparent; margin-bottom: 8px;"></div>
+                                    <span style="font-size: 12px;">Auto</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <div class="settings-row">
+                            <div class="settings-row-left">
+                                <div class="settings-row-title">Accent color</div>
+                            </div>
+                            <div class="settings-row-right" style="gap: 4px;">
+                                <div style="width: 16px; height: 16px; border-radius: 50%; background: #007aff; border: 2px solid rgba(0,0,0,0.2);"></div>
+                                <div style="width: 16px; height: 16px; border-radius: 50%; background: #ff3b30;"></div>
+                                <div style="width: 16px; height: 16px; border-radius: 50%; background: #ff9500;"></div>
+                                <div style="width: 16px; height: 16px; border-radius: 50%; background: #ffcc00;"></div>
+                                <div style="width: 16px; height: 16px; border-radius: 50%; background: #28cd41;"></div>
+                                <div style="width: 16px; height: 16px; border-radius: 50%; background: #af52de;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            };
+
+            // Set default tab
+            settingsBody.innerHTML = tabContents['general'];
+            
+            // Tab switching logic
+            const tabs = sidebar.querySelectorAll('.settings-sidebar-item');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const tabName = tab.getAttribute('data-tab');
+                    const titleText = tab.textContent.trim();
+                    settingsHeader.textContent = titleText;
+                    
+                    if (tabContents[tabName]) {
+                        settingsBody.innerHTML = tabContents[tabName];
+                    } else {
+                        settingsBody.innerHTML = `
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #888;">
+                                <div style="font-size: 40px; margin-bottom: 16px;"><i class="fa-solid fa-hammer"></i></div>
+                                <div>This settings pane is under construction.</div>
+                            </div>
+                        `;
+                    }
+                });
+            });
+
+            // Make sure the header allows drag
+            settingsHeader.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button') || e.target.closest('input')) return;
+                isDragging = true;
+                activeWindow = macWindow;
+                bringToFront(macWindow);
+                const rect = macWindow.getBoundingClientRect();
+                dragOffsetX = e.clientX - rect.left;
+                dragOffsetY = e.clientY - rect.top;
+                document.body.style.userSelect = 'none';
+            });
+
         } else {
             windowTitle.textContent = appName;
             windowBody.style.alignItems = 'center';
@@ -908,45 +1119,53 @@ document.addEventListener('DOMContentLoaded', () => {
         macWindow.addEventListener('mousedown', () => bringToFront(macWindow));
 
         // Drag logic on title bar
-        titleBar.addEventListener('mousedown', (e) => {
-            // Don't drag if clicking buttons or inputs
-            if (e.target.closest('.traffic-lights') || e.target.closest('.title-bar-left i') || e.target.closest('.title-bar-right i') || e.target.closest('.finder-btn') || e.target.closest('button') || e.target.closest('input')) return;
+        if (titleBar) {
+            titleBar.addEventListener('mousedown', (e) => {
+                // Don't drag if clicking buttons or inputs
+                if (e.target.closest('.traffic-lights') || e.target.closest('.title-bar-left i') || e.target.closest('.title-bar-right i') || e.target.closest('.finder-btn') || e.target.closest('button') || e.target.closest('input')) return;
 
-            isDragging = true;
-            activeWindow = macWindow;
-            bringToFront(macWindow);
+                isDragging = true;
+                activeWindow = macWindow;
+                bringToFront(macWindow);
 
-            const rect = macWindow.getBoundingClientRect();
-            dragOffsetX = e.clientX - rect.left;
-            dragOffsetY = e.clientY - rect.top;
+                const rect = macWindow.getBoundingClientRect();
+                dragOffsetX = e.clientX - rect.left;
+                dragOffsetY = e.clientY - rect.top;
 
-            document.body.style.userSelect = 'none';
-            const iframe = macWindow.querySelector('iframe');
-            if (iframe) iframe.style.pointerEvents = 'none';
-        });
+                document.body.style.userSelect = 'none';
+                const iframe = macWindow.querySelector('iframe');
+                if (iframe) iframe.style.pointerEvents = 'none';
+            });
+        }
 
         // Window actions
-        btnClose.addEventListener('click', () => {
-            macWindow.style.opacity = '0';
-            macWindow.style.transform = 'scale(0.8)';
-            setTimeout(() => {
-                macWindow.remove();
-                runningApps[appName]--;
-                if (runningApps[appName] <= 0) {
-                    delete runningApps[appName];
-                    dockWrapper.classList.remove('running');
-                }
-            }, 300);
-        });
+        if (btnClose) {
+            btnClose.addEventListener('click', () => {
+                macWindow.style.opacity = '0';
+                macWindow.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    macWindow.remove();
+                    runningApps[appName]--;
+                    if (runningApps[appName] <= 0) {
+                        delete runningApps[appName];
+                        if (dockWrapper) dockWrapper.classList.remove('running');
+                    }
+                }, 300);
+            });
+        }
 
-        btnMinimize.addEventListener('click', () => {
-            macWindow.classList.add('minimized');
-            macWindow.classList.remove('maximized');
-        });
+        if (btnMinimize) {
+            btnMinimize.addEventListener('click', () => {
+                macWindow.classList.add('minimized');
+                macWindow.classList.remove('maximized');
+            });
+        }
 
-        btnMaximize.addEventListener('click', () => {
-            macWindow.classList.toggle('maximized');
-        });
+        if (btnMaximize) {
+            btnMaximize.addEventListener('click', () => {
+                macWindow.classList.toggle('maximized');
+            });
+        }
 
         // Add to DOM
         desktop.appendChild(macWindow);
@@ -954,10 +1173,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Track running state
         if (!runningApps[appName]) runningApps[appName] = 0;
         runningApps[appName]++;
-        dockWrapper.classList.add('running');
+        if (dockWrapper) dockWrapper.classList.add('running');
 
-        if (!dockWrapper.appWindows) dockWrapper.appWindows = [];
-        dockWrapper.appWindows.push(macWindow);
+        if (dockWrapper) {
+            if (!dockWrapper.appWindows) dockWrapper.appWindows = [];
+            dockWrapper.appWindows.push(macWindow);
+        }
     }
 
     // Handle clicking on dock icons
