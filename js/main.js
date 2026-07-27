@@ -18,9 +18,88 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500); // Wait for fade transition (0.5s matching CSS)
         }, 10000);
     }
+    // --- Dock Positions Persistence ---
+    const DOCK_POSITIONS_KEY = 'macOSTahoe_Dock_Positions';
+
+    function saveDockPositions() {
+        const dockApps = document.querySelector('.dock-apps');
+        const dockFolders = document.querySelector('.dock-folders');
+        const appOrder = [];
+        const folderOrder = [];
+
+        if (dockApps) {
+            dockApps.querySelectorAll('.dock-icon-wrapper').forEach(wrapper => {
+                const appName = wrapper.getAttribute('data-name');
+                if (appName) appOrder.push(appName);
+            });
+        }
+        if (dockFolders) {
+            dockFolders.querySelectorAll('.dock-icon-wrapper').forEach(wrapper => {
+                const folderName = wrapper.getAttribute('data-name');
+                if (folderName) folderOrder.push(folderName);
+            });
+        }
+
+        const dockData = { apps: appOrder, folders: folderOrder };
+        localStorage.setItem(DOCK_POSITIONS_KEY, JSON.stringify(dockData));
+    }
+
+    function loadDockPositions() {
+        const saved = localStorage.getItem(DOCK_POSITIONS_KEY);
+        if (!saved) return;
+
+        try {
+            const dockData = JSON.parse(saved);
+            if (dockData.apps && Array.isArray(dockData.apps)) {
+                const dockApps = document.querySelector('.dock-apps');
+                if (dockApps) {
+                    const existingAppNodes = Array.from(dockApps.querySelectorAll('.dock-icon-wrapper'));
+                    const nodeMap = new Map();
+                    existingAppNodes.forEach(node => {
+                        nodeMap.set(node.getAttribute('data-name'), node);
+                    });
+
+                    dockData.apps.forEach(appName => {
+                        const node = nodeMap.get(appName);
+                        if (node) {
+                            dockApps.appendChild(node);
+                            nodeMap.delete(appName);
+                        }
+                    });
+                    nodeMap.forEach(node => dockApps.appendChild(node));
+                }
+            }
+
+            if (dockData.folders && Array.isArray(dockData.folders)) {
+                const dockFolders = document.querySelector('.dock-folders');
+                if (dockFolders) {
+                    const existingFolderNodes = Array.from(dockFolders.querySelectorAll('.dock-icon-wrapper'));
+                    const folderMap = new Map();
+                    existingFolderNodes.forEach(node => {
+                        folderMap.set(node.getAttribute('data-name'), node);
+                    });
+
+                    dockData.folders.forEach(folderName => {
+                        const node = folderMap.get(folderName);
+                        if (node) {
+                            dockFolders.appendChild(node);
+                            folderMap.delete(folderName);
+                        }
+                    });
+                    folderMap.forEach(node => dockFolders.appendChild(node));
+                }
+            }
+        } catch (e) {
+            console.error("Failed to parse dock positions from localStorage", e);
+        }
+    }
+
+    // Restore saved dock order on launch
+    loadDockPositions();
+
     // --- Smoother macOS Dock Magnification ---
     const dock = document.querySelector('.dock');
-    const wrappers = Array.from(document.querySelectorAll('.dock-icon-wrapper'));
+    const getWrappers = () => Array.from(document.querySelectorAll('.dock-icon-wrapper'));
 
     // Lowered scale and height based on user request
     const maxScale = 1.8;
@@ -29,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dock.addEventListener('mousemove', (e) => {
         requestAnimationFrame(() => {
-            wrappers.forEach(wrapper => {
+            getWrappers().forEach(wrapper => {
                 const icon = wrapper.querySelector('.dock-icon');
                 const rect = wrapper.getBoundingClientRect();
                 const x = rect.left + rect.width / 2;
@@ -38,9 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (distance < maxDistance) {
                     const curve = (Math.cos((distance / maxDistance) * Math.PI) + 1) / 2;
                     const scale = 1 + (maxScale - 1) * curve;
-                    // Push apart dynamically by expanding wrapper width
                     wrapper.style.width = `${baseWidth * scale}px`;
-                    // Lift up vertically (Lowered height)
                     const translateY = -12 * curve;
                     icon.style.transform = `scale(${scale}) translateY(${translateY}px)`;
                     icon.style.zIndex = Math.round(scale * 10);
@@ -55,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dock.addEventListener('mouseleave', () => {
         requestAnimationFrame(() => {
-            wrappers.forEach(wrapper => {
+            getWrappers().forEach(wrapper => {
                 const icon = wrapper.querySelector('.dock-icon');
                 wrapper.style.width = `${baseWidth}px`;
                 icon.style.transform = 'scale(1) translateY(0)';
@@ -67,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Dock Icon Dragging ---
     let draggedDockIcon = null;
 
-    wrappers.forEach(wrapper => {
+    getWrappers().forEach(wrapper => {
         wrapper.draggable = true;
 
         wrapper.addEventListener('dragstart', function (e) {
@@ -78,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.addEventListener('dragend', function () {
             setTimeout(() => this.style.opacity = '1', 0);
             draggedDockIcon = null;
+            saveDockPositions();
         });
 
         wrapper.addEventListener('dragover', function (e) {
@@ -86,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         wrapper.addEventListener('drop', function (e) {
             e.preventDefault();
+            saveDockPositions();
         });
 
         wrapper.addEventListener('dragenter', function (e) {
