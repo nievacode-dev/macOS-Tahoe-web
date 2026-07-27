@@ -1516,7 +1516,7 @@ body.edit-mode .control-center::before {
     border-radius: 22px;
     height: 68px;
     position: relative;
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(25px) saturate(180%);
     -webkit-backdrop-filter: blur(25px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.38);
