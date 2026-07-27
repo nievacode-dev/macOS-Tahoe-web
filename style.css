@@ -426,7 +426,7 @@ body {
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-radius: 28px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: none;
     border: 1px solid rgba(255, 255, 255, 0.18);
     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
 }
@@ -1507,20 +1507,23 @@ body.edit-mode .control-center::before {
 }
 
 /* 
- * Dock (Standard Glass Effect requested)
+ * Dock (Glass Effect & Transparent Border matching macOS style)
  */
 .dock {
     display: flex;
     align-items: center;
-    padding: 6px;
-    border-radius: 28px;
-    height: 72px;
+    padding: 4px 8px;
+    border-radius: 22px;
+    height: 68px;
     position: relative;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.38);
+    /* box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.25),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.1); */
 }
 
 .dock-apps,
@@ -1550,7 +1553,7 @@ body.edit-mode .control-center::before {
     height: 52px;
     object-fit: contain;
     cursor: pointer;
-    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
+    filter: none;
     transform-origin: bottom center;
     transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
     position: absolute;
@@ -1615,7 +1618,7 @@ body.edit-mode .control-center::before {
 /* Dots indicator for active/running apps */
 .running-dot {
     position: absolute;
-    bottom: -4px; /* Perfectly centered in the dock's bottom padding */
+    bottom: -2px; /* Perfectly centered in the dock's bottom padding */
     left: 50%;
     transform: translateX(-50%);
     width: 4px;
@@ -1635,8 +1638,8 @@ body.edit-mode .control-center::before {
 .dock-divider {
     width: 1px;
     height: 48px;
-    background: rgba(255, 255, 255, 0.2);
-    margin: 0 4px;
+    background: rgba(255, 255, 255, 0.3);
+    margin: 0 6px;
     border-radius: 1px;
     box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1);
 }

@@ -954,17 +954,207 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    desktop.addEventListener('contextmenu', (e) => {
-        // Prevent default browser right-click menu
-        e.preventDefault();
+    function closeAppWindows(appName) {
+        const windows = Array.from(document.querySelectorAll('.macos-window'));
+        windows.forEach(win => {
+            if (win.dataset && win.dataset.appName === appName) {
+                win.remove();
+            }
+        });
+        const dockIcon = document.querySelector(`.dock-icon-wrapper[data-name="${appName}"]`);
+        if (dockIcon) dockIcon.classList.remove('running');
+        if (typeof updateTopmostActiveApp === 'function') updateTopmostActiveApp();
+    }
 
-        // Calculate position
+    function showAppContextMenu(appName, x, y, isFolder = false, folderElement = null) {
+        const oldMenu = document.getElementById('dynamic-app-context-menu');
+        if (oldMenu) oldMenu.remove();
+
+        const menu = document.createElement('div');
+        menu.id = 'dynamic-app-context-menu';
+        menu.className = 'desktop-context-menu';
+        menu.style.display = 'flex';
+        menu.style.position = 'fixed';
+        menu.style.zIndex = '10000';
+
+        let menuItems = [];
+
+        if (isFolder || appName === 'Folder' || appName === 'Downloads' || appName === 'Trash') {
+            if (appName === 'Trash') {
+                menuItems = [
+                    { label: 'Open Trash', bold: true, action: () => { if (typeof createWindow === 'function') createWindow('Finder', 'icons/apple/Finder.png', null); } },
+                    { type: 'divider' },
+                    { label: 'Empty Trash', color: '#ff3b30', action: () => {
+                        if (window.mockFS) {
+                            window.mockFS['~/Downloads'] = [];
+                            if (window.fsHelper) window.fsHelper.save();
+                        }
+                        alert('Trash Emptied');
+                    } }
+                ];
+            } else {
+                menuItems = [
+                    { label: 'Open', bold: true, action: () => {
+                        if (typeof createWindow === 'function') {
+                            window.currentDir = '~/Desktop';
+                            createWindow('Finder', 'icons/apple/Finder.png', null);
+                        }
+                    } },
+                    { label: 'Get Info', action: () => alert(`Folder Info: ${appName}`) },
+                    { type: 'divider' },
+                    { label: 'Rename', action: () => {
+                        if (folderElement) {
+                            const span = folderElement.querySelector('.folder-name');
+                            const input = folderElement.querySelector('.folder-name-input');
+                            if (span && input) {
+                                span.classList.add('editing');
+                                input.classList.add('active');
+                                input.focus();
+                                input.select();
+                            }
+                        }
+                    } },
+                    { label: 'Move to Trash', color: '#ff3b30', action: () => {
+                        if (folderElement) folderElement.remove();
+                    } }
+                ];
+            }
+        } else if (appName === 'Safari') {
+            menuItems = [
+                { label: 'Open Safari', bold: true, action: () => createWindow('Safari', 'icons/apple/Safari.png', null) },
+                { type: 'divider' },
+                { label: 'New Window', action: () => createWindow('Safari', 'icons/apple/Safari.png', null) },
+                { label: 'New Private Window', action: () => createWindow('Safari', 'icons/apple/Safari.png', null) },
+                { type: 'divider' },
+                { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows('Safari') }
+            ];
+        } else if (appName === 'Terminal') {
+            menuItems = [
+                { label: 'Open Terminal', bold: true, action: () => createWindow('Terminal', 'icons/apple/Terminal.png', null) },
+                { type: 'divider' },
+                { label: 'New Window', action: () => createWindow('Terminal', 'icons/apple/Terminal.png', null) },
+                { label: 'New Tab', action: () => createWindow('Terminal', 'icons/apple/Terminal.png', null) },
+                { type: 'divider' },
+                { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows('Terminal') }
+            ];
+        } else if (appName === 'Messages') {
+            menuItems = [
+                { label: 'Open Messages', bold: true, action: () => createWindow('Messages', 'icons/apple/Messages.png', null) },
+                { type: 'divider' },
+                { label: 'New Message', action: () => createWindow('Messages', 'icons/apple/Messages.png', null) },
+                { type: 'divider' },
+                { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows('Messages') }
+            ];
+        } else if (appName === 'Mail') {
+            menuItems = [
+                { label: 'Open Mail', bold: true, action: () => createWindow('Mail', 'icons/apple/Mail.png', null) },
+                { type: 'divider' },
+                { label: 'Compose New Mail', action: () => createWindow('Mail', 'icons/apple/Mail.png', null) },
+                { label: 'Get New Mail', action: () => alert('Checking for new mail...') },
+                { type: 'divider' },
+                { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows('Mail') }
+            ];
+        } else if (appName === 'Music' || appName === 'Podcasts' || appName === 'Apple TV') {
+            menuItems = [
+                { label: `Open ${appName}`, bold: true, action: () => createWindow(appName, `icons/apple/${appName}.png`, null) },
+                { type: 'divider' },
+                { label: 'Play / Pause', action: () => alert('Playback toggled') },
+                { label: 'Next Track', action: () => alert('Next track') },
+                { type: 'divider' },
+                { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows(appName) }
+            ];
+        } else if (appName === 'Finder') {
+            menuItems = [
+                { label: 'New Finder Window', bold: true, action: () => createWindow('Finder', 'icons/apple/Finder.png', null) },
+                { type: 'divider' },
+                { label: 'Connect to Server...', action: () => alert('Connect to Server...') },
+                { label: 'Go to Folder...', action: () => alert('Go to Folder...') }
+            ];
+        } else {
+            menuItems = [
+                { label: `Open ${appName}`, bold: true, action: () => createWindow(appName, `icons/apple/${appName}.png`, null) },
+                { type: 'divider' },
+                { label: 'Options', action: () => {} },
+                { label: 'Show All Windows', action: () => { if (typeof updateTopmostActiveApp === 'function') updateTopmostActiveApp(); } },
+                { type: 'divider' },
+                { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows(appName) }
+            ];
+        }
+
+        menuItems.forEach(item => {
+            if (item.type === 'divider') {
+                const div = document.createElement('div');
+                div.className = 'cm-divider';
+                menu.appendChild(div);
+            } else {
+                const el = document.createElement('div');
+                el.className = 'cm-item';
+                el.textContent = item.label;
+                if (item.bold) el.style.fontWeight = '600';
+                if (item.color) el.style.color = item.color;
+                el.onclick = (evt) => {
+                    evt.stopPropagation();
+                    menu.remove();
+                    if (item.action) item.action();
+                };
+                menu.appendChild(el);
+            }
+        });
+
+        const menuWidth = 190;
+        const menuHeight = menuItems.length * 28;
+        if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+        if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+
+        menu.style.left = `${x}px`;
+        menu.style.top = `${y}px`;
+
+        document.body.appendChild(menu);
+
+        setTimeout(() => {
+            const closeMenu = (evt) => {
+                if (!menu.contains(evt.target)) {
+                    menu.remove();
+                    document.removeEventListener('click', closeMenu);
+                    document.removeEventListener('contextmenu', closeMenu);
+                }
+            };
+            document.addEventListener('click', closeMenu);
+            document.addEventListener('contextmenu', closeMenu);
+        }, 10);
+    }
+
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        closeAllOverlays();
+
+        const dockWrapper = e.target.closest('.dock-icon-wrapper');
+        const desktopFolder = e.target.closest('.desktop-folder');
+        const openWindow = e.target.closest('.macos-window');
+
+        if (dockWrapper) {
+            const appName = dockWrapper.getAttribute('data-name');
+            showAppContextMenu(appName, e.clientX, e.clientY, false, null);
+            return;
+        }
+
+        if (desktopFolder) {
+            const folderName = desktopFolder.querySelector('.folder-name').textContent;
+            showAppContextMenu(folderName, e.clientX, e.clientY, true, desktopFolder);
+            return;
+        }
+
+        if (openWindow && !e.target.closest('.finder-content')) {
+            const appName = openWindow.dataset.appName || 'App';
+            showAppContextMenu(appName, e.clientX, e.clientY, false, openWindow);
+            return;
+        }
+
+        // Standard desktop background context menu
         let x = e.clientX;
         let y = e.clientY;
-
-        // Ensure menu doesn't go off-screen
         const menuWidth = 240;
-        const menuHeight = 260; // approximate
+        const menuHeight = 260;
 
         if (x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
         if (y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
@@ -978,7 +1168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- New Folder Logic ---
-    window.createDesktopFolder = function (folderName = 'untitled folder', x = null, y = null) {
+    window.createDesktopFolder = function (folderName = 'untitled folder', x = null, y = null, isNew = false) {
         if (x === null) {
             x = parseInt(desktop.dataset.contextX) || 100;
             x = x - 40;
@@ -1023,22 +1213,52 @@ document.addEventListener('DOMContentLoaded', () => {
             folder.style.top = `${Math.round(currentTop / gridSizeY) * gridSizeY + 10}px`;
         }
 
+        function cancelOrDeleteFolder() {
+            folder.remove();
+            if (window.mockFS && window.mockFS['~/Desktop']) {
+                window.mockFS['~/Desktop'] = window.mockFS['~/Desktop'].filter(n => n !== folderName);
+                if (window.fsHelper) window.fsHelper.save();
+            }
+            window.saveDesktopIconPositions();
+        }
+
         function finishRename() {
             const oldName = nameSpan.textContent;
-            const newName = nameInput.value.trim() || 'untitled folder';
-            nameSpan.textContent = newName;
+            const newName = nameInput.value.trim();
+
+            if (!newName && isNew) {
+                cancelOrDeleteFolder();
+                return;
+            }
+
+            const finalName = newName || oldName;
+            nameSpan.textContent = finalName;
             nameSpan.classList.remove('editing');
             nameInput.classList.remove('active');
 
-            if (oldName !== newName && window.fsHelper && window.mockFS['~/Desktop'].includes(oldName)) {
-                window.fsHelper.rename('~/Desktop', oldName, newName);
+            if (window.fsHelper && window.mockFS['~/Desktop']) {
+                if (!window.mockFS['~/Desktop'].includes(finalName)) {
+                    window.fsHelper.createDir('~/Desktop', finalName);
+                } else if (oldName !== finalName) {
+                    window.fsHelper.rename('~/Desktop', oldName, finalName);
+                }
             }
             window.saveDesktopIconPositions();
         }
 
         nameInput.addEventListener('blur', finishRename);
         nameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') finishRename();
+            if (e.key === 'Enter') {
+                finishRename();
+            } else if (e.key === 'Escape') {
+                if (isNew) {
+                    cancelOrDeleteFolder();
+                } else {
+                    nameInput.value = nameSpan.textContent;
+                    nameSpan.classList.remove('editing');
+                    nameInput.classList.remove('active');
+                }
+            }
         });
 
         folder.addEventListener('click', (e) => {
@@ -1084,12 +1304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 folderName = `${baseName} ${counter}`;
             }
 
-            if (window.fsHelper) {
-                window.fsHelper.createDir('~/Desktop', folderName);
-            }
-
-            const { nameSpan, nameInput } = window.createDesktopFolder(folderName);
-            window.saveDesktopIconPositions();
+            const { nameSpan, nameInput } = window.createDesktopFolder(folderName, null, null, true);
 
             nameSpan.classList.add('editing');
             nameInput.classList.add('active');
@@ -1151,6 +1366,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper to close all overlays
     function closeAllOverlays() {
         contextMenu.style.display = 'none';
+        const dynamicAppMenu = document.getElementById('dynamic-app-context-menu');
+        if (dynamicAppMenu) dynamicAppMenu.remove();
 
         if (wifiMenu) wifiMenu.style.display = 'none';
         if (spotlightSearch) spotlightSearch.classList.remove('active');

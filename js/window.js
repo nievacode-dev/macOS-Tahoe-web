@@ -21,6 +21,27 @@ if (!window.mockFS) {
             '/Users': ['guest'],
             '/Applications': ['Safari.app', 'Terminal.app', 'Finder.app', 'Messages.app', 'System Settings.app', 'App Store.app']
         };
+    } else if (window.mockFS['~/Desktop']) {
+        // Clean out any stale 'untitled folder' entries
+        window.mockFS['~/Desktop'] = window.mockFS['~/Desktop'].filter(item => !item.startsWith('untitled folder'));
+        if (window.fsHelper && typeof window.fsHelper.save === 'function') window.fsHelper.save();
+    }
+
+    const storedDesktopIcons = localStorage.getItem('macOSTahoe_DesktopIcons');
+    if (storedDesktopIcons) {
+        try {
+            const icons = JSON.parse(storedDesktopIcons);
+            let changed = false;
+            Object.keys(icons).forEach(key => {
+                if (key.startsWith('untitled folder')) {
+                    delete icons[key];
+                    changed = true;
+                }
+            });
+            if (changed) {
+                localStorage.setItem('macOSTahoe_DesktopIcons', JSON.stringify(icons));
+            }
+        } catch (e) {}
     }
     window.currentDir = '~';
 
