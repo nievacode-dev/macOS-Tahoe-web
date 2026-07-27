@@ -145,15 +145,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function setActiveApp(appName) {
+        const finderToggle = document.getElementById('finder-menu-toggle');
+        const aboutAppItem = document.getElementById('about-app-item');
+        const hideAppItem = document.getElementById('hide-app-item');
+        const currentName = appName || 'Finder';
+
+        if (finderToggle) finderToggle.textContent = currentName;
+        if (aboutAppItem) aboutAppItem.textContent = `About ${currentName}`;
+        if (hideAppItem) hideAppItem.textContent = `Hide ${currentName}`;
+    }
+
+    function updateTopmostActiveApp() {
+        const windows = Array.from(document.querySelectorAll('.macos-window:not(.minimized)'));
+        if (windows.length === 0) {
+            setActiveApp('Finder');
+            return;
+        }
+        windows.sort((a, b) => (parseInt(b.style.zIndex) || 0) - (parseInt(a.style.zIndex) || 0));
+        const topWin = windows[0];
+        if (topWin && topWin.dataset && topWin.dataset.appName) {
+            setActiveApp(topWin.dataset.appName);
+        } else {
+            setActiveApp('Finder');
+        }
+    }
+
     function bringToFront(winElement) {
         highestZIndex++;
         winElement.style.zIndex = highestZIndex;
+        if (winElement && winElement.dataset && winElement.dataset.appName) {
+            setActiveApp(winElement.dataset.appName);
+        }
     }
 
     function createWindow(appName, iconImg, dockWrapper) {
         // Clone template
         const winNode = template.content.cloneNode(true);
         const macWindow = winNode.querySelector('.macos-window');
+        macWindow.dataset.appName = appName;
 
         // Setup Resize Handles
         const handles = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
@@ -1150,6 +1180,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         delete runningApps[appName];
                         if (dockWrapper) dockWrapper.classList.remove('running');
                     }
+                    updateTopmostActiveApp();
                 }, 300);
             });
         }
@@ -1158,6 +1189,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btnMinimize.addEventListener('click', () => {
                 macWindow.classList.add('minimized');
                 macWindow.classList.remove('maximized');
+                updateTopmostActiveApp();
             });
         }
 
@@ -1181,6 +1213,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Handle clicking on desktop background to focus Finder
+    desktop.addEventListener('click', (e) => {
+        if (e.target === desktop) {
+            setActiveApp('Finder');
+        }
+    });
+
     // Handle clicking on dock icons
     dockIcons.forEach(wrapper => {
         wrapper.addEventListener('click', () => {
@@ -1199,9 +1238,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         minimizedFound = true;
                     }
                 });
-                // If there were minimized windows, just restore them. 
-                // Otherwise, create a new window so multiple can exist.
                 if (minimizedFound) return;
+
+                if (wrapper.appWindows.length > 0) {
+                    const topWin = wrapper.appWindows[wrapper.appWindows.length - 1];
+                    bringToFront(topWin);
+                    return;
+                }
             }
 
             createWindow(appName, iconImg, wrapper);

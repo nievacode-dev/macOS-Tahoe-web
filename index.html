@@ -165,7 +165,7 @@
 
         <!-- Finder Menu -->
         <div class="top-dropdown" id="finder-menu">
-            <div class="cm-item">About Finder</div>
+            <div class="cm-item" id="about-app-item">About Finder</div>
             <div class="cm-divider"></div>
             <div class="cm-item">Settings...</div>
             <div class="cm-divider"></div>
@@ -173,7 +173,7 @@
             <div class="cm-divider"></div>
             <div class="cm-item">Services <i class="fa-solid fa-chevron-right cm-arrow"></i></div>
             <div class="cm-divider"></div>
-            <div class="cm-item">Hide Finder</div>
+            <div class="cm-item" id="hide-app-item">Hide Finder</div>
             <div class="cm-item">Hide Others</div>
             <div class="cm-item">Show All</div>
         </div>
@@ -214,129 +214,11 @@
             </div>
         </nav>
 
-        <!-- Controls Gallery (Edit Mode) -->
-        <div class="controls-gallery" id="controls-gallery">
-            <div class="gallery-sidebar">
-                <div class="gallery-search">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search Controls">
-                </div>
-                <div class="gallery-nav">
-                    <div class="gallery-item active"><i class="fa-solid fa-grip"></i> All Controls</div>
-                    <div class="gallery-item"><i class="fa-solid fa-battery-half"></i> Battery</div>
-                    <div class="gallery-item"><i class="fa-regular fa-clock"></i> Clock</div>
-                    <div class="gallery-item"><i class="fa-solid fa-wifi"></i> Connectivity</div>
-                    <div class="gallery-item"><i class="fa-solid fa-desktop"></i> Desktop & Finder</div>
-                    <div class="gallery-item"><i class="fa-solid fa-sun"></i> Display & Brightness</div>
-                </div>
-            </div>
-            <div class="gallery-main">
-                <div class="gallery-section">
-                    <span class="gallery-header">Suggestions</span>
-                    <div class="gallery-widgets">
-                        <div class="gallery-widget-slot" data-widget="battery-large">
-                            <div class="gw-preview battery-preview">
-                                <i class="fa-solid fa-battery-half"></i>
-                                <span>100%</span>
-                            </div>
-                            <div class="gw-badge add-badge"><i class="fa-solid fa-plus"></i></div>
-                        </div>
-                        <div class="gallery-widget-slot" data-widget="clock-alarms">
-                            <div class="gw-preview clock-preview">
-                                <i class="fa-regular fa-clock"></i>
-                                <span>Alarm</span>
-                            </div>
-                            <div class="gw-badge add-badge"><i class="fa-solid fa-plus"></i></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="gallery-section">
-                    <span class="gallery-header">Battery</span>
-                    <div class="gallery-widgets">
-                        <!-- Duplicate for layout purposes -->
-                        <div class="gallery-widget-slot" data-widget="battery-small">
-                            <div class="gw-preview battery-preview-small">
-                                <i class="fa-solid fa-battery-half"></i>
-                            </div>
-                            <div class="gw-badge add-badge"><i class="fa-solid fa-plus"></i></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Controls Gallery (Edit Mode) — dynamically rendered by JS -->
+        <div class="controls-gallery" id="controls-gallery"></div>
 
-        <!-- Control Center -->
-        <div class="control-center" id="control-center">
-            <div class="cc-section cc-top-grid">
-                <div class="cc-col-left">
-                    <div class="cc-module cc-pill cc-wifi">
-                        <div class="cc-icon-circle active"><i class="fa-solid fa-wifi"></i></div>
-                        <div class="cc-text">
-                            <span class="cc-title">Wi-Fi</span>
-                            <span class="cc-subtitle">Home</span>
-                        </div>
-                    </div>
-                    <div class="cc-row-2">
-                        <div class="cc-icon-circle large active"><i class="fa-brands fa-bluetooth-b"></i></div>
-                        <div class="cc-icon-circle large active"><i class="fa-solid fa-satellite-dish"></i></div>
-                    </div>
-                </div>
-                <div class="cc-col-right">
-                    <div class="cc-module cc-now-playing">
-                        <div class="np-header">
-                            <img src="icons/apple/Podcasts.png" alt="Art" class="np-art">
-                            <div class="np-info">
-                                <span class="np-title">Besties</span>
-                                <span class="np-subtitle">Black Country, New R...</span>
-                            </div>
-                        </div>
-                        <div class="np-controls">
-                            <i class="fa-solid fa-backward-step"></i>
-                            <i class="fa-solid fa-play fa-lg"></i>
-                            <i class="fa-solid fa-forward-step"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="cc-section cc-focus-grid">
-                <div class="cc-col-left">
-                    <div class="cc-module cc-pill cc-focus">
-                        <div class="cc-icon-circle focus-icon"><i class="fa-solid fa-moon"></i></div>
-                        <div class="cc-text"><span class="cc-title">Focus</span></div>
-                    </div>
-                </div>
-                <div class="cc-col-right">
-                    <div class="cc-row-2">
-                        <div class="cc-icon-circle large outline"><i class="fa-regular fa-rectangle-list"></i></div>
-                        <div class="cc-icon-circle large outline"><i class="fa-solid fa-layer-group"></i></div>
-                    </div>
-                </div>
-            </div>
-            <div class="cc-module cc-slider-box">
-                <span class="cc-title">Display</span>
-                <div class="cc-slider-wrapper">
-                    <div class="cc-slider-fill" id="display-fill"></div>
-                    <i class="fa-solid fa-sun cc-slider-icon"></i>
-                    <input type="range" class="cc-slider" id="display-slider" min="0" max="100" value="70">
-                </div>
-            </div>
-            <div class="cc-module cc-slider-box">
-                <span class="cc-title">Sound</span>
-                <div class="cc-slider-wrapper">
-                    <div class="cc-slider-fill" id="sound-fill"></div>
-                    <i class="fa-solid fa-volume-low cc-slider-icon"></i>
-                    <input type="range" class="cc-slider" id="sound-slider" min="0" max="100" value="50">
-                </div>
-            </div>
-            <div class="cc-bottom-tools">
-                <div class="cc-icon-circle large"><i class="fa-solid fa-circle-half-stroke"></i></div>
-                <div class="cc-icon-circle large"><i class="fa-solid fa-calculator"></i></div>
-                <div class="cc-icon-circle large"><i class="fa-solid fa-stopwatch"></i></div>
-                <div class="cc-icon-circle large"><i class="fa-solid fa-camera"></i></div>
-            </div>
-            <div class="cc-edit-btn">Edit Controls</div>
-        </div>
+        <!-- Control Center — dynamically rendered by JS -->
+        <div class="control-center" id="control-center"></div>
 
         <!-- macOS Window Template -->
         <template id="window-template">

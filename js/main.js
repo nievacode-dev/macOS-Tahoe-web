@@ -114,34 +114,513 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateTime(); setInterval(updateTime, 60000);
 
-    // --- Control Center Toggle ---
-    const ccToggleBtn = document.getElementById('cc-toggle');
-    const controlCenter = document.getElementById('control-center');
+    // ==========================================================
+    // Control Center Manager — data-driven, persistent, customizable
+    // ==========================================================
+    const CC_STORAGE_KEY = 'macOSTahoe_CC_Widgets';
+    const CC_TOGGLES_KEY = 'macOSTahoe_CC_Toggles';
 
-    ccToggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        controlCenter.classList.toggle('show');
-        ccToggleBtn.classList.toggle('active');
-    });
+    // Widget registry — every possible CC widget
+    const WIDGET_REGISTRY = [
+        // --- Connectivity group (top-left) ---
+        { id: 'wifi', label: 'Wi-Fi', subtitle: 'Home', icon: 'fa-solid fa-wifi', category: 'Connectivity', type: 'pill', section: 'connectivity', defaultActive: true, toggleable: true },
+        { id: 'bluetooth', label: 'Bluetooth', icon: 'fa-brands fa-bluetooth-b', category: 'Connectivity', type: 'circle', section: 'connectivity', defaultActive: true, toggleable: true },
+        { id: 'airdrop', label: 'AirDrop', icon: 'fa-solid fa-satellite-dish', category: 'Connectivity', type: 'circle', section: 'connectivity', defaultActive: true, toggleable: true },
+        // --- Now Playing (top-right) ---
+        { id: 'now-playing', label: 'Now Playing', icon: 'fa-solid fa-music', category: 'Media', type: 'now-playing', section: 'media', defaultActive: true },
+        // --- Focus group (mid) ---
+        { id: 'focus', label: 'Focus', icon: 'fa-solid fa-moon', category: 'Productivity', type: 'pill-focus', section: 'focus', defaultActive: true, toggleable: true },
+        { id: 'stage-manager', label: 'Stage Manager', icon: 'fa-solid fa-layer-group', category: 'Desktop & Finder', type: 'circle-outline', section: 'focus', defaultActive: true, toggleable: true },
+        { id: 'mirroring', label: 'Screen Mirroring', icon: 'fa-regular fa-rectangle-list', category: 'Desktop & Finder', type: 'circle-outline', section: 'focus', defaultActive: true, toggleable: true },
+        // --- Sliders ---
+        { id: 'display', label: 'Display', icon: 'fa-solid fa-sun', category: 'Display & Brightness', type: 'slider', section: 'slider', defaultActive: true, sliderValue: 70 },
+        { id: 'sound', label: 'Sound', icon: 'fa-solid fa-volume-low', category: 'Media', type: 'slider', section: 'slider', defaultActive: true, sliderValue: 50 },
+        { id: 'keyboard-brightness', label: 'Keyboard Brightness', icon: 'fa-regular fa-keyboard', category: 'Display & Brightness', type: 'slider', section: 'slider', defaultActive: false, sliderValue: 60 },
+        // --- Bottom tools ---
+        { id: 'dark-mode', label: 'Dark Mode', icon: 'fa-solid fa-circle-half-stroke', category: 'Appearance', type: 'circle-bottom', section: 'bottom', defaultActive: true, toggleable: true },
+        { id: 'calculator', label: 'Calculator', icon: 'fa-solid fa-calculator', category: 'Utilities', type: 'circle-bottom', section: 'bottom', defaultActive: true },
+        { id: 'timer', label: 'Timer', icon: 'fa-solid fa-stopwatch', category: 'Utilities', type: 'circle-bottom', section: 'bottom', defaultActive: true },
+        { id: 'screenshot', label: 'Screenshot', icon: 'fa-solid fa-camera', category: 'Utilities', type: 'circle-bottom', section: 'bottom', defaultActive: true },
+        // --- Additional widgets (not active by default) ---
+        { id: 'battery', label: 'Battery', icon: 'fa-solid fa-battery-three-quarters', category: 'Battery', type: 'battery', section: 'module', defaultActive: false },
+        { id: 'music-recognition', label: 'Music Recognition', icon: 'fa-solid fa-waveform', category: 'Media', type: 'circle-bottom', section: 'bottom', defaultActive: false },
+        { id: 'screen-recording', label: 'Screen Recording', icon: 'fa-solid fa-record-vinyl', category: 'Utilities', type: 'circle-bottom', section: 'bottom', defaultActive: false },
+        { id: 'do-not-disturb', label: 'Do Not Disturb', icon: 'fa-solid fa-bell-slash', category: 'Productivity', type: 'circle-bottom', section: 'bottom', defaultActive: false, toggleable: true },
+        { id: 'hearing', label: 'Hearing', icon: 'fa-solid fa-ear-listen', category: 'Accessibility', type: 'circle-bottom', section: 'bottom', defaultActive: false, toggleable: true },
+        { id: 'accessibility', label: 'Accessibility', icon: 'fa-solid fa-universal-access', category: 'Accessibility', type: 'circle-bottom', section: 'bottom', defaultActive: false },
+    ];
 
-    document.addEventListener('click', (e) => {
-        if (!controlCenter.contains(e.target) && !ccToggleBtn.contains(e.target)) {
-            controlCenter.classList.remove('show');
-            ccToggleBtn.classList.remove('active');
+    // Gallery category definitions
+    const GALLERY_CATEGORIES = [
+        { id: 'all', label: 'All Controls', icon: 'fa-solid fa-grip' },
+        { id: 'Connectivity', label: 'Connectivity', icon: 'fa-solid fa-wifi' },
+        { id: 'Media', label: 'Media', icon: 'fa-solid fa-music' },
+        { id: 'Productivity', label: 'Productivity', icon: 'fa-solid fa-moon' },
+        { id: 'Display & Brightness', label: 'Display & Brightness', icon: 'fa-solid fa-sun' },
+        { id: 'Desktop & Finder', label: 'Desktop & Finder', icon: 'fa-solid fa-desktop' },
+        { id: 'Utilities', label: 'Utilities', icon: 'fa-solid fa-wrench' },
+        { id: 'Appearance', label: 'Appearance', icon: 'fa-solid fa-circle-half-stroke' },
+        { id: 'Battery', label: 'Battery', icon: 'fa-solid fa-battery-half' },
+        { id: 'Accessibility', label: 'Accessibility', icon: 'fa-solid fa-universal-access' },
+    ];
+
+    class ControlCenterManager {
+        constructor() {
+            this.ccEl = document.getElementById('control-center');
+            this.galleryEl = document.getElementById('controls-gallery');
+            this.ccToggleBtn = document.getElementById('cc-toggle');
+            this.isEditing = false;
+            this.activeFilter = 'all';
+            this.searchQuery = '';
+
+            // Load persisted active widget IDs, or use defaults
+            this.activeWidgetIds = this._loadActiveWidgets();
+            // Load toggle states
+            this.toggleStates = this._loadToggleStates();
+
+            this.render();
+            this.renderGallery();
+            this._bindToggle();
         }
-    });
 
-    // --- Sliders logic ---
-    const displaySlider = document.getElementById('display-slider');
-    const displayFill = document.getElementById('display-fill');
-    const soundSlider = document.getElementById('sound-slider');
-    const soundFill = document.getElementById('sound-fill');
+        // --- Persistence ---
+        _loadActiveWidgets() {
+            const saved = localStorage.getItem(CC_STORAGE_KEY);
+            if (saved) {
+                try { return JSON.parse(saved); } catch(e) { /* fallback */ }
+            }
+            return WIDGET_REGISTRY.filter(w => w.defaultActive).map(w => w.id);
+        }
 
-    function updateSliderFill(slider, fill) { fill.style.width = slider.value + '%'; }
-    displaySlider.addEventListener('input', () => updateSliderFill(displaySlider, displayFill));
-    soundSlider.addEventListener('input', () => updateSliderFill(soundSlider, soundFill));
-    updateSliderFill(displaySlider, displayFill);
-    updateSliderFill(soundSlider, soundFill);
+        _saveActiveWidgets() {
+            localStorage.setItem(CC_STORAGE_KEY, JSON.stringify(this.activeWidgetIds));
+        }
+
+        _loadToggleStates() {
+            const saved = localStorage.getItem(CC_TOGGLES_KEY);
+            if (saved) {
+                try { return JSON.parse(saved); } catch(e) { /* fallback */ }
+            }
+            // Default: wifi, bluetooth, airdrop are active
+            return { wifi: true, bluetooth: true, airdrop: true };
+        }
+
+        _saveToggleStates() {
+            localStorage.setItem(CC_TOGGLES_KEY, JSON.stringify(this.toggleStates));
+        }
+
+        // --- Get widget by ID ---
+        _getWidget(id) {
+            return WIDGET_REGISTRY.find(w => w.id === id);
+        }
+
+        // --- Active widgets list ---
+        _getActiveWidgets() {
+            return this.activeWidgetIds.map(id => this._getWidget(id)).filter(Boolean);
+        }
+
+        // --- Inactive widgets list (for gallery) ---
+        _getInactiveWidgets() {
+            return WIDGET_REGISTRY.filter(w => !this.activeWidgetIds.includes(w.id));
+        }
+
+        // --- Toggle CC panel ---
+        _bindToggle() {
+            this.ccToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.ccEl.classList.toggle('show');
+                this.ccToggleBtn.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!this.ccEl.contains(e.target) && !this.ccToggleBtn.contains(e.target) && !this.galleryEl.contains(e.target)) {
+                    this.ccEl.classList.remove('show');
+                    this.ccToggleBtn.classList.remove('active');
+                    if (this.isEditing) this._exitEditMode();
+                }
+            });
+        }
+
+        // --- Render the full CC ---
+        render() {
+            const active = this._getActiveWidgets();
+            const connectivity = active.filter(w => w.section === 'connectivity');
+            const media = active.filter(w => w.section === 'media');
+            const focus = active.filter(w => w.section === 'focus');
+            const sliders = active.filter(w => w.section === 'slider');
+            const bottom = active.filter(w => w.section === 'bottom');
+            const modules = active.filter(w => w.section === 'module');
+
+            let html = '';
+
+            // --- Top grid: connectivity left, now-playing right ---
+            if (connectivity.length > 0 || media.length > 0) {
+                html += '<div class="cc-section cc-top-grid">';
+                // Left column
+                html += '<div class="cc-col-left">';
+                const pill = connectivity.find(w => w.type === 'pill');
+                const circles = connectivity.filter(w => w.type === 'circle');
+                if (pill) {
+                    const isOn = this.toggleStates[pill.id] !== false;
+                    html += `<div class="cc-module cc-pill cc-${pill.id}" data-widget-id="${pill.id}">
+                        <div class="cc-icon-circle ${isOn ? 'active' : ''}"><i class="${pill.icon}"></i></div>
+                        <div class="cc-text">
+                            <span class="cc-title">${pill.label}</span>
+                            ${pill.subtitle ? `<span class="cc-subtitle">${pill.subtitle}</span>` : ''}
+                        </div>
+                    </div>`;
+                }
+                if (circles.length > 0) {
+                    html += '<div class="cc-row-2">';
+                    circles.forEach(c => {
+                        const isOn = this.toggleStates[c.id] !== false;
+                        html += `<div class="cc-icon-circle large ${isOn ? 'active' : ''}" data-widget-id="${c.id}"><i class="${c.icon}"></i></div>`;
+                    });
+                    html += '</div>';
+                }
+                html += '</div>';
+                // Right column
+                html += '<div class="cc-col-right">';
+                const np = media.find(w => w.type === 'now-playing');
+                if (np) {
+                    html += `<div class="cc-module cc-now-playing" data-widget-id="${np.id}">
+                        <div class="np-header">
+                            <img src="icons/apple/Podcasts.png" alt="Art" class="np-art">
+                            <div class="np-info">
+                                <span class="np-title">Besties</span>
+                                <span class="np-subtitle">Black Country, New R...</span>
+                            </div>
+                        </div>
+                        <div class="np-controls">
+                            <i class="fa-solid fa-backward-step"></i>
+                            <i class="fa-solid fa-play fa-lg"></i>
+                            <i class="fa-solid fa-forward-step"></i>
+                        </div>
+                    </div>`;
+                }
+                html += '</div>';
+                html += '</div>';
+            }
+
+            // --- Focus grid ---
+            if (focus.length > 0) {
+                html += '<div class="cc-section cc-focus-grid">';
+                const focusPill = focus.find(w => w.type === 'pill-focus');
+                const focusCircles = focus.filter(w => w.type === 'circle-outline');
+                html += '<div class="cc-col-left">';
+                if (focusPill) {
+                    const isOn = this.toggleStates[focusPill.id] === true;
+                    html += `<div class="cc-module cc-pill cc-focus" data-widget-id="${focusPill.id}">
+                        <div class="cc-icon-circle focus-icon ${isOn ? 'active' : ''}"><i class="${focusPill.icon}"></i></div>
+                        <div class="cc-text"><span class="cc-title">${focusPill.label}</span></div>
+                    </div>`;
+                }
+                html += '</div>';
+                html += '<div class="cc-col-right">';
+                if (focusCircles.length > 0) {
+                    html += '<div class="cc-row-2">';
+                    focusCircles.forEach(c => {
+                        const isOn = this.toggleStates[c.id] === true;
+                        html += `<div class="cc-icon-circle large outline ${isOn ? 'active' : ''}" data-widget-id="${c.id}"><i class="${c.icon}"></i></div>`;
+                    });
+                    html += '</div>';
+                }
+                html += '</div>';
+                html += '</div>';
+            }
+
+            // --- Battery module ---
+            modules.forEach(w => {
+                if (w.type === 'battery') {
+                    html += `<div class="cc-module cc-battery" data-widget-id="${w.id}">
+                        <i class="${w.icon} cc-battery-icon"></i>
+                        <div class="cc-battery-info">
+                            <span class="cc-battery-pct">100%</span>
+                            <div class="cc-battery-bar"><div class="cc-battery-fill" style="width: 100%"></div></div>
+                            <span class="cc-battery-status">Fully Charged</span>
+                        </div>
+                    </div>`;
+                }
+            });
+
+            // --- Sliders ---
+            sliders.forEach(s => {
+                const val = s.sliderValue || 50;
+                html += `<div class="cc-module cc-slider-box" data-widget-id="${s.id}">
+                    <span class="cc-title">${s.label}</span>
+                    <div class="cc-slider-wrapper">
+                        <div class="cc-slider-fill" id="${s.id}-fill" style="width: ${val}%"></div>
+                        <i class="${s.icon} cc-slider-icon"></i>
+                        <input type="range" class="cc-slider" id="${s.id}-slider" min="0" max="100" value="${val}">
+                    </div>
+                </div>`;
+            });
+
+            // --- Bottom tools ---
+            if (bottom.length > 0) {
+                html += '<div class="cc-bottom-tools">';
+                bottom.forEach(b => {
+                    const isOn = this.toggleStates[b.id] === true;
+                    html += `<div class="cc-icon-circle large ${isOn ? 'active' : ''}" data-widget-id="${b.id}"><i class="${b.icon}"></i></div>`;
+                });
+                html += '</div>';
+            }
+
+            // --- Edit button ---
+            html += '<div class="cc-edit-btn">Edit Controls</div>';
+
+            this.ccEl.innerHTML = html;
+            this._bindSliders();
+            this._bindToggles();
+            this._bindEditBtn();
+        }
+
+        // --- Bind slider fills ---
+        _bindSliders() {
+            this.ccEl.querySelectorAll('.cc-slider').forEach(slider => {
+                const id = slider.id.replace('-slider', '');
+                const fill = document.getElementById(`${id}-fill`);
+                if (!fill) return;
+                const updateFill = () => { fill.style.width = slider.value + '%'; };
+                slider.addEventListener('input', updateFill);
+                updateFill();
+            });
+        }
+
+        // --- Bind toggle interactions ---
+        _bindToggles() {
+            // Pill toggles
+            this.ccEl.querySelectorAll('.cc-pill[data-widget-id]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    if (this.isEditing) return;
+                    const wid = el.dataset.widgetId;
+                    const w = this._getWidget(wid);
+                    if (!w || !w.toggleable) return;
+                    const circle = el.querySelector('.cc-icon-circle');
+                    if (circle) {
+                        circle.classList.toggle('active');
+                        this.toggleStates[wid] = circle.classList.contains('active');
+                        this._saveToggleStates();
+                    }
+                });
+            });
+            // Circle toggles
+            this.ccEl.querySelectorAll('.cc-icon-circle.large[data-widget-id]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    if (this.isEditing) return;
+                    const wid = el.dataset.widgetId;
+                    const w = this._getWidget(wid);
+                    if (!w || !w.toggleable) return;
+                    el.classList.toggle('active');
+                    this.toggleStates[wid] = el.classList.contains('active');
+                    this._saveToggleStates();
+                });
+            });
+        }
+
+        // --- Edit mode ---
+        _bindEditBtn() {
+            const btn = this.ccEl.querySelector('.cc-edit-btn');
+            if (!btn) return;
+            btn.addEventListener('click', () => {
+                if (this.isEditing) {
+                    this._exitEditMode();
+                } else {
+                    this._enterEditMode();
+                }
+            });
+        }
+
+        _enterEditMode() {
+            this.isEditing = true;
+            document.body.classList.add('edit-mode');
+            const btn = this.ccEl.querySelector('.cc-edit-btn');
+            if (btn) { btn.textContent = 'Done'; btn.classList.add('editing'); }
+
+            // Inject remove badges on all widget elements
+            this.ccEl.querySelectorAll('[data-widget-id]').forEach(el => {
+                if (el.querySelector('.remove-badge')) return;
+                const badge = document.createElement('div');
+                badge.className = 'gw-badge remove-badge';
+                badge.innerHTML = '<i class="fa-solid fa-minus"></i>';
+                if (getComputedStyle(el).position === 'static') el.style.position = 'relative';
+                el.appendChild(badge);
+
+                badge.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const wid = el.dataset.widgetId;
+                    this._removeWidget(wid);
+                });
+            });
+
+            // Force badges visible (CSS already handles this via body.edit-mode)
+            this.renderGallery();
+        }
+
+        _exitEditMode() {
+            this.isEditing = false;
+            document.body.classList.remove('edit-mode');
+            const btn = this.ccEl.querySelector('.cc-edit-btn');
+            if (btn) { btn.textContent = 'Edit Controls'; btn.classList.remove('editing'); }
+            // Remove badges
+            this.ccEl.querySelectorAll('.remove-badge').forEach(b => b.remove());
+            this._saveActiveWidgets();
+        }
+
+        _removeWidget(widgetId) {
+            this.activeWidgetIds = this.activeWidgetIds.filter(id => id !== widgetId);
+            this._saveActiveWidgets();
+            this.render();
+            if (this.isEditing) {
+                this._enterEditMode(); // re-inject badges
+                this.renderGallery();
+            }
+        }
+
+        _addWidget(widgetId) {
+            if (this.activeWidgetIds.includes(widgetId)) return;
+            this.activeWidgetIds.push(widgetId);
+            this._saveActiveWidgets();
+            this.render();
+            if (this.isEditing) {
+                this._enterEditMode();
+                this.renderGallery();
+            }
+            // Animate the newly added widget
+            const newEl = this.ccEl.querySelector(`[data-widget-id="${widgetId}"]`);
+            if (newEl) newEl.classList.add('cc-widget-enter');
+        }
+
+        // --- Render Gallery ---
+        renderGallery() {
+            const inactive = this._getInactiveWidgets();
+            let filtered = inactive;
+
+            // Apply category filter
+            if (this.activeFilter !== 'all') {
+                filtered = filtered.filter(w => w.category === this.activeFilter);
+            }
+
+            // Apply search filter
+            if (this.searchQuery) {
+                const q = this.searchQuery.toLowerCase();
+                filtered = filtered.filter(w => w.label.toLowerCase().includes(q) || w.category.toLowerCase().includes(q));
+            }
+
+            // Group by category
+            const grouped = {};
+            filtered.forEach(w => {
+                if (!grouped[w.category]) grouped[w.category] = [];
+                grouped[w.category].push(w);
+            });
+
+            let html = '';
+
+            // Sidebar
+            html += '<div class="gallery-sidebar">';
+            html += '<div class="gallery-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Search Controls" id="gallery-search-input"></div>';
+            html += '<div class="gallery-nav">';
+            GALLERY_CATEGORIES.forEach(cat => {
+                const activeClass = this.activeFilter === cat.id ? 'active' : '';
+                html += `<div class="gallery-item ${activeClass}" data-category="${cat.id}"><i class="${cat.icon}"></i> ${cat.label}</div>`;
+            });
+            html += '</div></div>';
+
+            // Main area
+            html += '<div class="gallery-main">';
+            if (Object.keys(grouped).length === 0) {
+                if (inactive.length === 0) {
+                    html += `<div class="gallery-empty">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>All Controls Added</span>
+                        <div class="gallery-empty-sub">Every available control is already in your Control Center.</div>
+                    </div>`;
+                } else {
+                    html += `<div class="gallery-empty">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>No Results</span>
+                        <div class="gallery-empty-sub">Try a different search term or category.</div>
+                    </div>`;
+                }
+            } else {
+                for (const [category, widgets] of Object.entries(grouped)) {
+                    html += `<div class="gallery-section">`;
+                    html += `<span class="gallery-header">${category}</span>`;
+                    html += `<div class="gallery-widgets">`;
+                    widgets.forEach(w => {
+                        const previewColor = this._getCategoryColor(w.category);
+                        html += `<div class="gallery-widget-slot" data-widget="${w.id}">
+                            <div class="gw-preview gw-preview-standard">
+                                <i class="${w.icon}" style="color: ${previewColor}"></i>
+                                <span>${w.label}</span>
+                            </div>
+                            <div class="gw-badge add-badge"><i class="fa-solid fa-plus"></i></div>
+                            <span class="gw-label">${w.label}</span>
+                        </div>`;
+                    });
+                    html += '</div></div>';
+                }
+            }
+            html += '</div>';
+
+            this.galleryEl.innerHTML = html;
+            this._bindGalleryEvents();
+        }
+
+        _getCategoryColor(category) {
+            const colors = {
+                'Connectivity': '#0A78F2',
+                'Media': '#FF2D55',
+                'Productivity': '#A855F7',
+                'Display & Brightness': '#FF9500',
+                'Desktop & Finder': '#64748B',
+                'Utilities': '#6B7280',
+                'Appearance': '#8B5CF6',
+                'Battery': '#34C759',
+                'Accessibility': '#0EA5E9',
+            };
+            return colors[category] || '#0A78F2';
+        }
+
+        _bindGalleryEvents() {
+            // Category sidebar clicks
+            this.galleryEl.querySelectorAll('.gallery-item[data-category]').forEach(item => {
+                item.addEventListener('click', () => {
+                    this.activeFilter = item.dataset.category;
+                    this.renderGallery();
+                });
+            });
+
+            // Search input
+            const searchInput = document.getElementById('gallery-search-input');
+            if (searchInput) {
+                searchInput.value = this.searchQuery;
+                searchInput.addEventListener('input', () => {
+                    this.searchQuery = searchInput.value;
+                    this.renderGallery();
+                    // Re-focus after re-render
+                    const newInput = document.getElementById('gallery-search-input');
+                    if (newInput) { newInput.focus(); newInput.selectionStart = newInput.selectionEnd = newInput.value.length; }
+                });
+            }
+
+            // Add badges
+            this.galleryEl.querySelectorAll('.gallery-widget-slot').forEach(slot => {
+                const badge = slot.querySelector('.add-badge');
+                if (badge) {
+                    badge.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const wid = slot.dataset.widget;
+                        this._addWidget(wid);
+                    });
+                }
+            });
+        }
+    }
+
+    // Initialize Control Center Manager
+    const ccManager = new ControlCenterManager();
+
 
     // --- Lock Screen ---
     const lockscreen = document.getElementById('lockscreen');
@@ -283,65 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Control Center Edit Mode ---
-    const editBtn = document.querySelector('.cc-edit-btn');
-    // Select all widgets that can be removed
-    const editableWidgets = document.querySelectorAll('.control-center .cc-module, .control-center .cc-bottom-tools .cc-icon-circle.large, .control-center .cc-row-2 .cc-icon-circle.large');
-
-    // Inject remove badges into all editable widgets
-    editableWidgets.forEach(widget => {
-        const badge = document.createElement('div');
-        badge.className = 'gw-badge remove-badge';
-        badge.innerHTML = '<i class="fa-solid fa-minus"></i>';
-
-        // Ensure widget is positioned relatively for the absolute badge
-        if (getComputedStyle(widget).position === 'static') {
-            widget.style.position = 'relative';
-        }
-
-        widget.appendChild(badge);
-
-        // Handle removal (hide the widget)
-        badge.addEventListener('click', (e) => {
-            e.stopPropagation();
-            widget.style.display = 'none';
-        });
-    });
-
-    // Handle Edit Mode Toggle
-    if (editBtn) {
-        editBtn.addEventListener('click', () => {
-            document.body.classList.toggle('edit-mode');
-
-            if (document.body.classList.contains('edit-mode')) {
-                editBtn.textContent = 'Done';
-                editBtn.classList.add('editing');
-            } else {
-                editBtn.textContent = 'Edit Controls';
-                editBtn.classList.remove('editing');
-            }
-        });
-    }
-
-    // Handle adding from gallery
-    const addBadges = document.querySelectorAll('.gallery-widget-slot .add-badge');
-    addBadges.forEach(badge => {
-        badge.addEventListener('click', (e) => {
-            e.stopPropagation();
-
-            // For the replica, just find any hidden widget and bring it back to simulate adding
-            const hiddenWidgets = Array.from(editableWidgets).filter(w => w.style.display === 'none');
-            if (hiddenWidgets.length > 0) {
-                // Flash animation for adding
-                hiddenWidgets[0].style.display = '';
-                hiddenWidgets[0].animate([
-                    { transform: 'scale(0.8)', opacity: 0 },
-                    { transform: 'scale(1.05)', opacity: 1 },
-                    { transform: 'scale(1)', opacity: 1 }
-                ], { duration: 300, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' });
-            }
-        });
-    });
 
     // --- Desktop Context Menu & Drag Logic ---
     const desktop = document.querySelector('.desktop');

@@ -95,21 +95,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    border-radius: 12px;
-}
-
-/* 
- * Screen Bezel (Draws the black border over everything)
- */
-.desktop::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 12px;
-    box-shadow: inset 0 0 0 8px #000;
-    pointer-events: none;
-    z-index: 10000;
-    /* ensures it sits on top of the lockscreen and notch */
+    border-radius: 0;
 }
 
 /* 
@@ -328,9 +314,8 @@ body {
  */
 .menu-bar {
     height: 28px;
-    margin: 8px 8px 0 8px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    margin: 0;
+    border-radius: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -437,12 +422,13 @@ body {
 }
 
 .cc-module {
-    background: rgba(40, 40, 45, 0.45);
+    background: rgba(40, 40, 45, 0.5);
     backdrop-filter: blur(40px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-radius: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
 }
 
 .cc-pill {
@@ -711,6 +697,181 @@ body.edit-mode .cc-icon-circle.large {
     background: #0A78F2;
     color: white;
     border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Battery Module */
+.cc-battery {
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cc-battery-icon {
+    font-size: 28px;
+    color: #34C759;
+}
+
+.cc-battery-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cc-battery-pct {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.cc-battery-bar {
+    width: 80px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.cc-battery-fill {
+    height: 100%;
+    background: #34C759;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.cc-battery-status {
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+/* Widget enter animation */
+@keyframes cc-widget-enter {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.cc-widget-enter {
+    animation: cc-widget-enter 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Hover glow for toggleable circles */
+.cc-icon-circle.large:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+.cc-icon-circle.large.active:hover {
+    box-shadow: 0 10px 30px rgba(10, 120, 242, 0.5), 0 0 20px rgba(10, 120, 242, 0.3);
+}
+
+.cc-pill:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Auto-wrapping bottom tools grid */
+.cc-bottom-tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: 12px;
+}
+
+/* Gallery widget labels */
+.gw-label {
+    display: block;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: #555;
+    margin-top: 6px;
+    line-height: 1.2;
+}
+
+/* Gallery widget standard size */
+.gw-preview-standard {
+    width: 80px;
+    height: 80px;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 11px;
+    color: #333;
+    font-weight: 500;
+}
+
+.gw-preview-standard i {
+    font-size: 22px;
+}
+
+/* Gallery empty state */
+.gallery-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: #999;
+}
+
+.gallery-empty i {
+    font-size: 36px;
+    opacity: 0.4;
+    margin-bottom: 12px;
+}
+
+.gallery-empty span {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.gallery-empty-sub {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+/* Gallery height auto-sizing */
+.controls-gallery {
+    height: auto;
+    max-height: 700px;
+}
+
+/* CC text styles for dynamic rendering */
+.cc-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.cc-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.cc-subtitle {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+/* Edit mode overlay dim */
+body.edit-mode .control-center::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    z-index: -1;
+    border-radius: 40px;
+    background: rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(2px);
+    opacity: 1;
+    transition: opacity 0.3s ease;
 }
 
 /* 
@@ -1310,7 +1471,7 @@ body.edit-mode .cc-icon-circle.large {
 
 .cc-bottom-tools {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
     gap: 12px;
 }
 
@@ -1322,7 +1483,7 @@ body.edit-mode .cc-icon-circle.large {
     background: rgba(40, 40, 45, 0.45);
     backdrop-filter: blur(40px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: none;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -1359,7 +1520,7 @@ body.edit-mode .cc-icon-circle.large {
     backdrop-filter: blur(40px) saturate(200%);
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .dock-apps,
