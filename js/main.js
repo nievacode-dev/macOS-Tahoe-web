@@ -724,17 +724,109 @@ document.addEventListener('DOMContentLoaded', () => {
     // Unlock interactions
     document.addEventListener('keydown', (e) => {
         if (lockscreen && !lockscreen.classList.contains('unlocked')) {
-            lockBottom.classList.add('active');
-            lockInput.focus();
+            // Don't auto-activate password input if typing inside an interactive menu or input
+            if (e.target.tagName !== 'INPUT') {
+                lockBottom.classList.add('active');
+                lockInput.focus();
+            }
         }
     });
 
     if (lockBottom) {
-        lockBottom.addEventListener('click', () => {
-            lockBottom.classList.add('active');
-            lockInput.focus();
+        lockBottom.addEventListener('click', (e) => {
+            if (!e.target.closest('#lock-header-bar')) {
+                lockBottom.classList.add('active');
+                lockInput.focus();
+            }
         });
     }
+
+    // --- Lock Screen Top Bar Interactions ---
+    const lockInputSourceToggle = document.getElementById('lock-input-source-toggle');
+    const lockInputSourceLabel = document.getElementById('lock-input-source-label');
+    const lockInputMenu = document.getElementById('lock-input-menu');
+    const lockWifiToggle = document.getElementById('lock-wifi-toggle');
+    const lockBatteryToggle = document.getElementById('lock-battery-toggle');
+    const lockBatteryPopup = document.getElementById('lock-battery-popup');
+
+    function closeLockPopups() {
+        if (lockInputMenu) lockInputMenu.style.display = 'none';
+        if (lockBatteryPopup) lockBatteryPopup.style.display = 'none';
+        if (lockInputSourceToggle) lockInputSourceToggle.classList.remove('active');
+        if (lockBatteryToggle) lockBatteryToggle.classList.remove('active');
+        if (lockWifiToggle) lockWifiToggle.classList.remove('active');
+    }
+
+    if (lockInputSourceToggle && lockInputMenu) {
+        lockInputSourceToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = lockInputMenu.style.display === 'block';
+            closeLockPopups();
+            if (!isOpen) {
+                lockInputMenu.style.display = 'block';
+                lockInputSourceToggle.classList.add('active');
+            }
+        });
+
+        lockInputMenu.querySelectorAll('.lock-menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const source = item.getAttribute('data-source');
+                if (source && lockInputSourceLabel) {
+                    lockInputSourceLabel.textContent = source;
+                }
+                lockInputMenu.querySelectorAll('.lock-menu-item').forEach(mi => {
+                    const check = mi.querySelector('.check-icon');
+                    if (mi === item) {
+                        mi.classList.add('active');
+                        if (check) check.style.opacity = '1';
+                    } else {
+                        mi.classList.remove('active');
+                        if (check) check.style.opacity = '0';
+                    }
+                });
+                closeLockPopups();
+            });
+        });
+    }
+
+    if (lockBatteryToggle && lockBatteryPopup) {
+        lockBatteryToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = lockBatteryPopup.style.display === 'block';
+            closeLockPopups();
+            if (!isOpen) {
+                lockBatteryPopup.style.display = 'block';
+                lockBatteryToggle.classList.add('active');
+            }
+        });
+    }
+
+    if (lockWifiToggle) {
+        lockWifiToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const wifiMenu = document.getElementById('wifi-menu');
+            if (wifiMenu) {
+                const isOpen = wifiMenu.style.display === 'flex';
+                if (typeof closeAllOverlays === 'function') closeAllOverlays();
+                closeLockPopups();
+                if (!isOpen) {
+                    lockWifiToggle.classList.add('active');
+                    wifiMenu.style.display = 'flex';
+                    const rect = lockWifiToggle.getBoundingClientRect();
+                    wifiMenu.style.top = `${rect.bottom + 8}px`;
+                    wifiMenu.style.right = `${window.innerWidth - rect.right}px`;
+                    wifiMenu.style.zIndex = '10000';
+                }
+            }
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#lock-header-bar') && !e.target.closest('#lock-input-menu') && !e.target.closest('#lock-battery-popup')) {
+            closeLockPopups();
+        }
+    });
 
     const lockHint = document.getElementById('lock-hint');
     const lockForgot = document.getElementById('lock-forgot');

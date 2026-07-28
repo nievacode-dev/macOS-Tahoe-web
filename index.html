@@ -22,6 +22,47 @@
     <div class="desktop">
         <!-- Lock Screen -->
         <div class="lockscreen" id="lockscreen">
+            <!-- Lock Screen Top Header Bar -->
+            <div class="lock-header-bar" id="lock-header-bar">
+                <div class="lock-header-left">
+                    <!-- Clean left spacing -->
+                </div>
+                <div class="lock-header-right">
+                    <div class="lock-bar-item lock-input-source" id="lock-input-source-toggle" title="Input Source">
+                        <span id="lock-input-source-label">U.S.</span>
+                        <i class="fa-regular fa-keyboard"></i>
+                    </div>
+                    <div class="lock-bar-item lock-battery-item" id="lock-battery-toggle" title="Battery">
+                        <i class="fa-solid fa-battery-full"></i>
+                    </div>
+                    <div class="lock-bar-item lock-wifi-item" id="lock-wifi-toggle" title="Wi-Fi">
+                        <i class="fa-solid fa-wifi"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Source Dropdown Menu for Lock Screen -->
+            <div class="lock-input-menu" id="lock-input-menu" style="display: none;">
+                <div class="lock-menu-item active" data-source="U.S.">
+                    <i class="fa-solid fa-check check-icon"></i> U.S.
+                </div>
+                <div class="lock-menu-item" data-source="U.S. Int">
+                    <i class="fa-solid fa-check check-icon" style="opacity: 0;"></i> U.S. International
+                </div>
+                <div class="lock-menu-item" data-source="ABC">
+                    <i class="fa-solid fa-check check-icon" style="opacity: 0;"></i> ABC - Extended
+                </div>
+                <div class="lock-menu-item" data-source="Pinyin">
+                    <i class="fa-solid fa-check check-icon" style="opacity: 0;"></i> Pinyin - Simplified
+                </div>
+            </div>
+
+            <!-- Battery Status Popup for Lock Screen -->
+            <div class="lock-battery-popup" id="lock-battery-popup" style="display: none;">
+                <div class="lock-pop-row"><i class="fa-solid fa-charging-station" style="color: #30d158; margin-right: 6px;"></i><strong>Battery 100%</strong></div>
+                <div class="lock-pop-sub">Fully Charged &bull; Power Source: Power Adapter</div>
+            </div>
+
             <div class="lock-top">
                 <div class="lock-date" id="lock-date">Tue Apr 1</div>
                 <div class="lock-time" id="lock-time">9:41</div>
