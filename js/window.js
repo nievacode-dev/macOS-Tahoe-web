@@ -541,7 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (titleBarRight) titleBarRight.innerHTML = '';
 
             if (trafficLights && titleBarLeft) {
-                trafficLights.style.padding = '0 16px 0 0'; // Adjust padding for titlebar
+                trafficLights.style.margin = '0 16px 0 0'; // Adjust margin for titlebar
+                trafficLights.style.padding = '0';
                 titleBarLeft.insertBefore(trafficLights, titleBarLeft.firstChild);
             }
 
@@ -716,7 +717,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (titleBarLeft) {
                 titleBarLeft.innerHTML = '';
                 if (trafficLights) {
-                    trafficLights.style.padding = '0 16px 0 0';
+                    trafficLights.style.margin = '0 16px 0 0';
+                    trafficLights.style.padding = '0';
                     titleBarLeft.appendChild(trafficLights);
                 }
                 titleBarLeft.innerHTML += `
@@ -1165,9 +1167,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             windowTitle.textContent = appName;
+            
+            // Hide sidebar and move traffic lights to the title bar
+            const sidebar = macWindow.querySelector('.sidebar');
+            const titleBarLeft = macWindow.querySelector('.title-bar-left');
+            const titleBarRight = macWindow.querySelector('.title-bar-right');
+            const trafficLights = macWindow.querySelector('.traffic-lights');
+
+            if (sidebar) sidebar.style.display = 'none';
+            if (titleBarLeft) titleBarLeft.querySelectorAll('i').forEach(i => i.remove());
+            if (titleBarRight) titleBarRight.innerHTML = '';
+
+            if (trafficLights && titleBarLeft) {
+                trafficLights.style.margin = '0 16px 0 0'; // Adjust margin for titlebar
+                trafficLights.style.padding = '0';
+                titleBarLeft.insertBefore(trafficLights, titleBarLeft.firstChild);
+            }
+
             windowBody.style.alignItems = 'center';
             windowBody.style.justifyContent = 'center';
-            windowBody.innerHTML = `<img src="${iconImg}" alt="${appName}" class="window-app-icon">`;
+            windowBody.style.flexDirection = 'column';
+            windowBody.style.gap = '16px';
+            
+            windowBody.innerHTML = `
+                <img src="${iconImg}" alt="${appName}" class="window-app-icon" style="width: 80px; height: 80px; margin-bottom: 12px;">
+                <div style="font-size: 20px; font-weight: 600; color: #444;">Coming Soon</div>
+                <div style="font-size: 13px; color: #888;">This application is under development.</div>
+            `;
             if (sidebarItem) {
                 sidebarItem.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${appName}`;
             }

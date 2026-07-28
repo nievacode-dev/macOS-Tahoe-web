@@ -146,7 +146,7 @@ body.fs-peek .macos-window.maximized .title-bar {
 .traffic-lights {
     display: flex;
     gap: 8px;
-    padding: 18px;
+    margin: 18px;
 }
 
 .traffic-light {
@@ -703,7 +703,7 @@ body.fs-peek .macos-window.maximized .title-bar {
 
 .arrange-menu-popover {
     position: absolute;
-    top: 30px;
+    top: 25px;
     left: 45px; /* align with maximize btn */
     background: rgba(245, 245, 245, 0.95);
     backdrop-filter: blur(20px);
@@ -726,10 +726,10 @@ body.fs-peek .macos-window.maximized .title-bar {
 .arrange-menu-popover::before {
     content: '';
     position: absolute;
-    top: -15px;
+    top: -13px;
     left: -20px;
     right: 0;
-    height: 15px;
+    height: 13px;
 }
 
 /* 500 miliseconds delay before opening menu when hovering green button */
