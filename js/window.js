@@ -93,6 +93,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let highestZIndex = 50;
     const runningApps = {};
+    
+    // Fullscreen Peek Logic
+    let fsMenuHideTimeout = null;
+    const showFsPeek = () => {
+        if (!document.body.classList.contains('fullscreen-active')) return;
+        clearTimeout(fsMenuHideTimeout);
+        document.body.classList.add('fs-peek');
+    };
+    const hideFsPeek = () => {
+        if (!document.body.classList.contains('fullscreen-active')) return;
+        fsMenuHideTimeout = setTimeout(() => {
+            document.body.classList.remove('fs-peek');
+        }, 400);
+    };
 
     // Dragging state
     let activeWindow = null;
@@ -231,6 +245,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const windowTitle = macWindow.querySelector('.window-title');
         const windowBody = macWindow.querySelector('.window-body');
         const sidebarItem = macWindow.querySelector('.sidebar-item.active');
+        const titleBar = macWindow.querySelector('.title-bar');
+
+        if (titleBar) {
+            titleBar.addEventListener('mouseenter', showFsPeek);
+            titleBar.addEventListener('mouseleave', hideFsPeek);
+        }
 
         if (appName === 'Finder') {
             macWindow.classList.add('finder-window');
@@ -1164,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnClose = macWindow.querySelector('.btn-close');
         const btnMinimize = macWindow.querySelector('.btn-minimize');
         const btnMaximize = macWindow.querySelector('.btn-maximize');
-        const titleBar = macWindow.querySelector('.title-bar');
+  
 
         // Bring to front on click anywhere
         macWindow.addEventListener('mousedown', () => bringToFront(macWindow));
@@ -1189,11 +1209,25 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        function updateFullscreenState() {
+            setTimeout(() => {
+                if (document.querySelector('.macos-window.maximized:not(.minimized)')) {
+                    document.body.classList.add('fullscreen-active');
+                } else {
+                    document.body.classList.remove('fullscreen-active');
+                    // Clean up peek state when leaving fullscreen
+                    document.body.classList.remove('fs-peek');
+                }
+            }, 50);
+        }
+
         // Window actions
         if (btnClose) {
             btnClose.addEventListener('click', () => {
                 macWindow.style.opacity = '0';
                 macWindow.style.transform = 'scale(0.8)';
+                macWindow.classList.remove('maximized');
+                updateFullscreenState();
                 setTimeout(() => {
                     macWindow.remove();
                     runningApps[appName]--;
@@ -1211,13 +1245,169 @@ document.addEventListener('DOMContentLoaded', () => {
                 macWindow.classList.add('minimized');
                 macWindow.classList.remove('maximized');
                 updateTopmostActiveApp();
+                updateFullscreenState();
             });
         }
 
         if (btnMaximize) {
             btnMaximize.addEventListener('click', () => {
                 macWindow.classList.toggle('maximized');
+                updateFullscreenState();
             });
+        }
+
+        // Window Arrange Menu Popover Interactivity
+        const arrangePopover = macWindow.querySelector('.arrange-menu-popover');
+        if (arrangePopover) {
+            arrangePopover.addEventListener('mousedown', (e) => e.stopPropagation());
+
+            const btnLeftHalf = arrangePopover.querySelector('.left-half')?.closest('.arrange-icon-btn');
+            const btnRightHalf = arrangePopover.querySelector('.right-half')?.closest('.arrange-icon-btn');
+            const btnTopHalf = arrangePopover.querySelector('.top-half')?.closest('.arrange-icon-btn');
+            const btnBottomHalf = arrangePopover.querySelector('.bottom-half')?.closest('.arrange-icon-btn');
+
+            const btnFullScreen = arrangePopover.querySelector('.full-screen')?.closest('.arrange-icon-btn');
+            const btnSplit = arrangePopover.querySelector('.split')?.closest('.arrange-icon-btn');
+            const btnSplitThird = arrangePopover.querySelector('.split-third')?.closest('.arrange-icon-btn');
+            const btnQuarters = arrangePopover.querySelector('.quarters')?.closest('.arrange-icon-btn');
+            const btnFullScreenRow = arrangePopover.querySelector('.btn-maximize-trigger');
+
+            const animateWindowTo = (win, bounds) => {
+                win.classList.remove('maximized');
+                updateFullscreenState();
+                win.style.transition = 'left 0.35s cubic-bezier(0.16, 1, 0.3, 1), top 0.35s cubic-bezier(0.16, 1, 0.3, 1), width 0.35s cubic-bezier(0.16, 1, 0.3, 1), height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease';
+                win.style.left = bounds.left;
+                win.style.top = bounds.top;
+                win.style.width = bounds.width;
+                win.style.height = bounds.height;
+                setTimeout(() => {
+                    win.style.transition = 'opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+                }, 400);
+            };
+
+            if (btnLeftHalf) {
+                btnLeftHalf.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    animateWindowTo(macWindow, {
+                        left: '6px',
+                        top: '34px',
+                        width: 'calc(50vw - 9px)',
+                        height: 'calc(100vh - 120px)'
+                    });
+                });
+            }
+
+            if (btnRightHalf) {
+                btnRightHalf.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    animateWindowTo(macWindow, {
+                        left: 'calc(50vw + 3px)',
+                        top: '34px',
+                        width: 'calc(50vw - 9px)',
+                        height: 'calc(100vh - 120px)'
+                    });
+                });
+            }
+
+            if (btnTopHalf) {
+                btnTopHalf.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    animateWindowTo(macWindow, {
+                        left: '6px',
+                        top: '34px',
+                        width: 'calc(100vw - 12px)',
+                        height: 'calc((100vh - 120px) / 2 - 3px)'
+                    });
+                });
+            }
+
+            if (btnBottomHalf) {
+                btnBottomHalf.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    animateWindowTo(macWindow, {
+                        left: '6px',
+                        top: 'calc(34px + (100vh - 120px) / 2 + 3px)',
+                        width: 'calc(100vw - 12px)',
+                        height: 'calc((100vh - 120px) / 2 - 3px)'
+                    });
+                });
+            }
+
+            if (btnFullScreen) {
+                btnFullScreen.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    macWindow.classList.toggle('maximized');
+                    updateFullscreenState();
+                });
+            }
+
+            if (btnFullScreenRow) {
+                btnFullScreenRow.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    macWindow.classList.toggle('maximized');
+                    updateFullscreenState();
+                });
+            }
+
+            if (btnSplit) {
+                btnSplit.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const allWindows = Array.from(document.querySelectorAll('.macos-window:not(.minimized)'));
+                    animateWindowTo(macWindow, {
+                        left: '6px',
+                        top: '34px',
+                        width: 'calc(50vw - 9px)',
+                        height: 'calc(100vh - 120px)'
+                    });
+                    const otherWin = allWindows.find(w => w !== macWindow);
+                    if (otherWin) {
+                        animateWindowTo(otherWin, {
+                            left: 'calc(50vw + 3px)',
+                            top: '34px',
+                            width: 'calc(50vw - 9px)',
+                            height: 'calc(100vh - 120px)'
+                        });
+                    }
+                });
+            }
+
+            if (btnSplitThird) {
+                btnSplitThird.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const allWindows = Array.from(document.querySelectorAll('.macos-window:not(.minimized)'));
+                    animateWindowTo(macWindow, {
+                        left: '6px',
+                        top: '34px',
+                        width: 'calc(33.33vw - 9px)',
+                        height: 'calc(100vh - 120px)'
+                    });
+                    const otherWin = allWindows.find(w => w !== macWindow);
+                    if (otherWin) {
+                        animateWindowTo(otherWin, {
+                            left: 'calc(33.33vw + 3px)',
+                            top: '34px',
+                            width: 'calc(66.66vw - 9px)',
+                            height: 'calc(100vh - 120px)'
+                        });
+                    }
+                });
+            }
+
+            if (btnQuarters) {
+                btnQuarters.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const allWindows = Array.from(document.querySelectorAll('.macos-window:not(.minimized)'));
+                    const positions = [
+                        { left: '6px', top: '34px', width: 'calc(50vw - 9px)', height: 'calc((100vh - 120px) / 2 - 3px)' },
+                        { left: 'calc(50vw + 3px)', top: '34px', width: 'calc(50vw - 9px)', height: 'calc((100vh - 120px) / 2 - 3px)' },
+                        { left: '6px', top: 'calc(34px + (100vh - 120px) / 2 + 3px)', width: 'calc(50vw - 9px)', height: 'calc((100vh - 120px) / 2 - 3px)' },
+                        { left: 'calc(50vw + 3px)', top: 'calc(34px + (100vh - 120px) / 2 + 3px)', width: 'calc(50vw - 9px)', height: 'calc((100vh - 120px) / 2 - 3px)' }
+                    ];
+                    allWindows.slice(0, 4).forEach((win, idx) => {
+                        animateWindowTo(win, positions[idx]);
+                    });
+                });
+            }
         }
 
         // Add to DOM
@@ -1233,6 +1423,9 @@ document.addEventListener('DOMContentLoaded', () => {
             dockWrapper.appWindows.push(macWindow);
         }
     }
+
+    // Expose createWindow globally so main.js and other scripts can launch apps
+    window.createWindow = createWindow;
 
     // Handle clicking on desktop background to focus Finder
     desktop.addEventListener('click', (e) => {
@@ -1271,4 +1464,14 @@ document.addEventListener('DOMContentLoaded', () => {
             createWindow(appName, iconImg, wrapper);
         });
     });
+
+    // --- Fullscreen Menu Bar Auto-Reveal ---
+    const fsTrigger = document.getElementById('fullscreen-top-trigger');
+    const menuBar = document.querySelector('.menu-bar');
+
+    if (fsTrigger && menuBar) {
+        fsTrigger.addEventListener('mouseenter', showFsPeek);
+        menuBar.addEventListener('mouseenter', showFsPeek);
+        menuBar.addEventListener('mouseleave', hideFsPeek);
+    }
 });

@@ -230,6 +230,9 @@
             <div class="cm-item">Select All</div>
         </div>
 
+        <!-- Fullscreen Top Edge Trigger (invisible hover zone) -->
+        <div class="fullscreen-top-trigger" id="fullscreen-top-trigger"></div>
+
         <!-- Top Menu Bar -->
         <nav class="menu-bar">
             <div class="menu-left">
@@ -277,6 +280,48 @@
                         <div class="traffic-light close btn-close"></div>
                         <div class="traffic-light minimize btn-minimize"></div>
                         <div class="traffic-light maximize btn-maximize"></div>
+                        
+                        <!-- Arrange Menu Popover -->
+                        <div class="arrange-menu-popover">
+                            <div class="arrange-section-title">Move &amp; Resize</div>
+                            <div class="arrange-row">
+                                <div class="arrange-icon-btn active" title="Left Half">
+                                    <div class="arrange-rect left-half"></div>
+                                </div>
+                                <div class="arrange-icon-btn" title="Right Half">
+                                    <div class="arrange-rect right-half"></div>
+                                </div>
+                                <div class="arrange-icon-btn" title="Top Half">
+                                    <div class="arrange-rect top-half"></div>
+                                </div>
+                                <div class="arrange-icon-btn" title="Bottom Half">
+                                    <div class="arrange-rect bottom-half"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="arrange-section-title" style="margin-top: 10px;">Fill &amp; Arrange</div>
+                            <div class="arrange-row">
+                                <div class="arrange-icon-btn" title="Full Screen">
+                                    <div class="arrange-rect full-screen"></div>
+                                </div>
+                                <div class="arrange-icon-btn" title="Split">
+                                    <div class="arrange-rect split"></div>
+                                </div>
+                                <div class="arrange-icon-btn" title="Split Third">
+                                    <div class="arrange-rect split-third"></div>
+                                </div>
+                                <div class="arrange-icon-btn" title="Quarters">
+                                    <div class="arrange-rect quarters"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="arrange-divider"></div>
+                            
+                            <div class="arrange-list-item btn-maximize-trigger">
+                                <span>Full Screen</span>
+                                <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #888;"></i>
+                            </div>
+                        </div>
                     </div>
                     <div class="sidebar-items">
                         <span class="sidebar-title">Favourites</span>
