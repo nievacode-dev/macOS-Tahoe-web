@@ -41,7 +41,7 @@ if (!window.mockFS) {
             if (changed) {
                 localStorage.setItem('macOSTahoe_DesktopIcons', JSON.stringify(icons));
             }
-        } catch (e) {}
+        } catch (e) { }
     }
     window.currentDir = '~';
 
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let highestZIndex = 50;
     const runningApps = {};
-    
+
     // Fullscreen Peek Logic
     let fsMenuHideTimeout = null;
     const showFsPeek = () => {
@@ -956,16 +956,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else if (appName === 'System Settings') {
             macWindow.classList.add('settings-window');
-            
+
             // Adjust sidebar and main structure
             const sidebar = macWindow.querySelector('.sidebar');
             const titleBar = macWindow.querySelector('.title-bar');
             const trafficLights = macWindow.querySelector('.traffic-lights');
-            
+
             // Move traffic lights to the sidebar top
             sidebar.innerHTML = '';
             sidebar.appendChild(trafficLights);
-            
+
             // Add search and navigation to sidebar
             const sidebarContent = document.createElement('div');
             sidebarContent.innerHTML = `
@@ -1009,17 +1009,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             sidebar.appendChild(sidebarContent);
-            
+
             // Reconfigure main content
             const mainContent = macWindow.querySelector('.main-content');
             mainContent.innerHTML = `
                 <div class="settings-main-header">General</div>
                 <div class="settings-main-body"></div>
             `;
-            
+
             const settingsBody = mainContent.querySelector('.settings-main-body');
             const settingsHeader = mainContent.querySelector('.settings-main-header');
-            
+
             // Tab content templates
             const tabContents = {
                 'wi-fi': `
@@ -1128,18 +1128,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Set default tab
             settingsBody.innerHTML = tabContents['general'];
-            
+
             // Tab switching logic
             const tabs = sidebar.querySelectorAll('.settings-sidebar-item');
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
                     tabs.forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    
+
                     const tabName = tab.getAttribute('data-tab');
                     const titleText = tab.textContent.trim();
                     settingsHeader.textContent = titleText;
-                    
+
                     if (tabContents[tabName]) {
                         settingsBody.innerHTML = tabContents[tabName];
                     } else {
@@ -1167,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } else {
             windowTitle.textContent = appName;
-            
+
             // Hide sidebar and move traffic lights to the title bar
             const sidebar = macWindow.querySelector('.sidebar');
             const titleBarLeft = macWindow.querySelector('.title-bar-left');
@@ -1188,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             windowBody.style.justifyContent = 'center';
             windowBody.style.flexDirection = 'column';
             windowBody.style.gap = '16px';
-            
+
             windowBody.innerHTML = `
                 <img src="${iconImg}" alt="${appName}" class="window-app-icon" style="width: 80px; height: 80px; margin-bottom: 12px;">
                 <div style="font-size: 20px; font-weight: 600; color: #444;">Coming Soon</div>
@@ -1210,7 +1210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnClose = macWindow.querySelector('.btn-close');
         const btnMinimize = macWindow.querySelector('.btn-minimize');
         const btnMaximize = macWindow.querySelector('.btn-maximize');
-  
+
 
         // Bring to front on click anywhere
         macWindow.addEventListener('mousedown', () => bringToFront(macWindow));

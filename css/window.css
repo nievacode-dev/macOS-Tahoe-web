@@ -548,7 +548,8 @@ body.fs-peek .macos-window.maximized .title-bar {
 }
 
 .macos-window.settings-window .traffic-lights {
-    padding: 16px 20px;
+    margin: 16px 20px;
+    padding: 0;
 }
 
 .settings-search-container {
@@ -717,7 +718,7 @@ body.fs-peek .macos-window.maximized .title-bar {
     opacity: 0;
     pointer-events: none;
     transform: translateY(-5px);
-    transition: opacity 0.2s ease 0s, transform 0.2s ease 0s;
+    transition: opacity 0.2s ease 500ms, transform 0.2s ease 500ms;
     display: flex;
     flex-direction: column;
 }
