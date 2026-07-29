@@ -2015,6 +2015,7 @@ body.edit-mode .control-center::before {
         opacity: 0;
         transform: translateY(-6px) scale(0.96);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -2063,7 +2064,7 @@ body.edit-mode .control-center::before {
 /* 
  * Fullscreen Mode Animations 
  */
-.menu-bar, 
+.menu-bar,
 .dock-container {
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
 }

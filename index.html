@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="css/window.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
     <!-- Boot Screen -->
     <div class="boot-screen" id="boot-screen">
@@ -59,7 +61,8 @@
 
             <!-- Battery Status Popup for Lock Screen -->
             <div class="lock-battery-popup" id="lock-battery-popup" style="display: none;">
-                <div class="lock-pop-row"><i class="fa-solid fa-charging-station" style="color: #30d158; margin-right: 6px;"></i><strong>Battery 100%</strong></div>
+                <div class="lock-pop-row"><i class="fa-solid fa-charging-station"
+                        style="color: #30d158; margin-right: 6px;"></i><strong>Battery 100%</strong></div>
                 <div class="lock-pop-sub">Fully Charged &bull; Power Source: Power Adapter</div>
             </div>
 
@@ -70,9 +73,12 @@
             <div class="lock-bottom">
                 <div class="lock-avatar"><i class="fa-solid fa-user"></i></div>
                 <div class="lock-name">Guest</div>
-                <input type="password" class="lock-input" id="lock-input" placeholder="Enter Password" autocomplete="off">
+                <input type="password" class="lock-input" id="lock-input" placeholder="Enter Password"
+                    autocomplete="off">
                 <div class="lock-hint" id="lock-hint">Touch ID or Enter Password</div>
-                <div class="lock-forgot" id="lock-forgot" style="display: none; cursor: pointer; color: #a1a1a6; font-size: 12px; margin-top: 10px; transition: color 0.2s;">Forgot Password?</div>
+                <div class="lock-forgot" id="lock-forgot"
+                    style="display: none; cursor: pointer; color: #a1a1a6; font-size: 12px; margin-top: 10px; transition: color 0.2s;">
+                    Forgot Password?</div>
             </div>
         </div>
 
@@ -102,7 +108,8 @@
         </div>
 
         <!-- Finder Context Menu -->
-        <div class="desktop-context-menu" id="finder-context-menu" style="display: none; position: fixed; z-index: 10000;">
+        <div class="desktop-context-menu" id="finder-context-menu"
+            style="display: none; position: fixed; z-index: 10000;">
             <div class="cm-item" id="finder-cm-open">Open</div>
             <div class="cm-item" id="finder-cm-rename">Rename</div>
             <div class="cm-item" id="finder-cm-delete" style="color: #ff3b30;">Delete</div>
@@ -121,7 +128,8 @@
             </div>
             <div class="cm-divider"></div>
             <div class="wifi-section-title">Preferred Networks</div>
-            <div class="cm-item active-network"><i class="fa-solid fa-check check-icon"></i> Home Network <i class="fa-solid fa-lock wifi-lock"></i></div>
+            <div class="cm-item active-network"><i class="fa-solid fa-check check-icon"></i> Home Network <i
+                    class="fa-solid fa-lock wifi-lock"></i></div>
             <div class="cm-divider"></div>
             <div class="wifi-section-title">Other Networks</div>
             <div class="cm-item"><i class="fa-solid fa-wifi spacer-icon"></i> Guest Network</div>
@@ -142,7 +150,7 @@
         <!-- Notification Center -->
         <div class="notification-center" id="notification-center">
             <div class="nc-date">Monday, September 15</div>
-            
+
             <div class="nc-widget calendar-widget">
                 <div class="nc-widget-title">Calendar</div>
                 <div class="calendar-event">
@@ -162,7 +170,7 @@
                     <div class="weather-loc">San Francisco</div>
                 </div>
             </div>
-            
+
             <div class="nc-notifications">
                 <div class="nc-widget-title">Notifications</div>
                 <div class="nc-notification-card">
@@ -252,7 +260,7 @@
                     <i class="fa-solid fa-sliders"></i>
                 </span>
                 <span class="icon-item siri" id="siri-toggle">
-                    <img src="icons/apple/Siri.png" alt="Siri" width="16" height="16" style="filter: brightness(0) invert(1);">
+                    <img src="icons/apple/Siri.png" alt="Siri" width="16" height="16">
                 </span>
                 <span class="date-time" id="datetime-toggle">Mon Sep 15 11:14 PM</span>
             </div>
@@ -280,7 +288,7 @@
                         <div class="traffic-light close btn-close"></div>
                         <div class="traffic-light minimize btn-minimize"></div>
                         <div class="traffic-light maximize btn-maximize"></div>
-                        
+
                         <!-- Arrange Menu Popover -->
                         <div class="arrange-menu-popover">
                             <div class="arrange-section-title">Move &amp; Resize</div>
@@ -298,7 +306,7 @@
                                     <div class="arrange-rect bottom-half"></div>
                                 </div>
                             </div>
-                            
+
                             <div class="arrange-section-title" style="margin-top: 10px;">Fill &amp; Arrange</div>
                             <div class="arrange-row">
                                 <div class="arrange-icon-btn" title="Full Screen">
@@ -314,9 +322,9 @@
                                     <div class="arrange-rect quarters"></div>
                                 </div>
                             </div>
-                            
+
                             <div class="arrange-divider"></div>
-                            
+
                             <div class="arrange-list-item btn-maximize-trigger">
                                 <span>Full Screen</span>
                                 <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #888;"></i>
@@ -357,7 +365,8 @@
                     <i class="fa-solid fa-triangle-exclamation" style="color: #ff9f0a; font-size: 40px;"></i>
                 </div>
                 <div class="reset-dialog-title">Are you sure you want to reset?</div>
-                <div class="reset-dialog-msg">This will wipe all your saved data, files, and settings. This action cannot be undone.</div>
+                <div class="reset-dialog-msg">This will wipe all your saved data, files, and settings. This action
+                    cannot be undone.</div>
                 <div class="reset-dialog-buttons">
                     <button class="reset-btn cancel" id="reset-cancel-btn">Cancel</button>
                     <button class="reset-btn confirm" id="reset-confirm-btn">Wipe Data</button>
@@ -420,35 +429,96 @@
         <div class="dock-container">
             <div class="dock">
                 <div class="dock-apps">
-                    <div class="dock-icon-wrapper" data-name="Finder"><img src="icons/apple/Finder.png" alt="Finder" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Launchpad"><img src="icons/apple/Launchpad.png" alt="Launchpad" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Safari"><img src="icons/apple/Safari.png" alt="Safari" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Messages"><img src="icons/apple/Messages.png" alt="Messages" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Mail"><img src="icons/apple/Mail.png" alt="Mail" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Maps"><img src="icons/apple/Plans.png" alt="Maps" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Photos"><img src="icons/apple/Photos.png" alt="Photos" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="FaceTime"><img src="icons/apple/FaceTime.png" alt="FaceTime" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Calendar"><img src="icons/apple/Calendrier.png" alt="Calendar" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Contacts"><img src="icons/apple/Contacts.png" alt="Contacts" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Reminders"><img src="icons/apple/Rappels.png" alt="Reminders" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Notes"><img src="icons/apple/Notes.png" alt="Notes" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Apple TV"><img src="icons/apple/TV.png" alt="TV" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Music"><img src="icons/apple/Musique.png" alt="Music" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Podcasts"><img src="icons/apple/Podcasts.png" alt="Podcasts" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="App Store"><img src="icons/apple/App Store.png" alt="App Store" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="System Settings"><img src="icons/apple/Réglages système.png" alt="System Settings" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Terminal"><img src="icons/apple/Terminal.png" alt="Terminal" class="dock-icon"><div class="running-dot"></div></div>
+                    <div class="dock-icon-wrapper" data-name="Finder"><img src="icons/apple/Finder.png" alt="Finder"
+                            class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Launchpad"><img src="icons/apple/Launchpad.png"
+                            alt="Launchpad" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Safari"><img src="icons/apple/Safari.png" alt="Safari"
+                            class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Messages"><img src="icons/apple/Messages.png"
+                            alt="Messages" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Mail"><img src="icons/apple/Mail.png" alt="Mail"
+                            class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Maps"><img src="icons/apple/Plans.png" alt="Maps"
+                            class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Photos"><img src="icons/apple/Photos.png" alt="Photos"
+                            class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="FaceTime"><img src="icons/apple/FaceTime.png"
+                            alt="FaceTime" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Calendar"><img src="icons/apple/Calendrier.png"
+                            alt="Calendar" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Contacts"><img src="icons/apple/Contacts.png"
+                            alt="Contacts" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Reminders"><img src="icons/apple/Rappels.png"
+                            alt="Reminders" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Notes"><img src="icons/apple/Notes.png" alt="Notes"
+                            class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Apple TV"><img src="icons/apple/TV.png" alt="TV"
+                            class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Music"><img src="icons/apple/Musique.png" alt="Music"
+                            class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Podcasts"><img src="icons/apple/Podcasts.png"
+                            alt="Podcasts" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="App Store"><img src="icons/apple/App Store.png"
+                            alt="App Store" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="System Settings"><img
+                            src="icons/apple/Réglages système.png" alt="System Settings" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Terminal"><img src="icons/apple/Terminal.png"
+                            alt="Terminal" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
                 </div>
                 <div class="dock-divider"></div>
                 <div class="dock-folders">
-                    <div class="dock-icon-wrapper" data-name="Downloads"><img src="icons/folders/Download.png" alt="Downloads" class="dock-icon"><div class="running-dot"></div></div>
-                    <div class="dock-icon-wrapper" data-name="Trash"><img src="icons/folders/Folder.png" alt="Folder" class="dock-icon"><div class="running-dot"></div></div>
+                    <div class="dock-icon-wrapper" data-name="Downloads"><img src="icons/folders/Download.png"
+                            alt="Downloads" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
+                    <div class="dock-icon-wrapper" data-name="Trash"><img src="icons/apple/s-trashempty@2x.png"
+                            alt="Trash" class="dock-icon">
+                        <div class="running-dot"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script src="js/main.js"></script>
     <script src="js/window.js"></script>
 </body>
+
 </html>

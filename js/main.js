@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Boot Screen Animation ---
     const bootScreen = document.getElementById('boot-screen');
     const bootProgressBar = document.getElementById('boot-progress-bar');
-    
+
     if (bootScreen && bootProgressBar) {
         // Start progress bar animation after a short delay
         setTimeout(() => {
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         _loadActiveWidgets() {
             const saved = localStorage.getItem(CC_STORAGE_KEY);
             if (saved) {
-                try { return JSON.parse(saved); } catch(e) { /* fallback */ }
+                try { return JSON.parse(saved); } catch (e) { /* fallback */ }
             }
             return WIDGET_REGISTRY.filter(w => w.defaultActive).map(w => w.id);
         }
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         _loadToggleStates() {
             const saved = localStorage.getItem(CC_TOGGLES_KEY);
             if (saved) {
-                try { return JSON.parse(saved); } catch(e) { /* fallback */ }
+                try { return JSON.parse(saved); } catch (e) { /* fallback */ }
             }
             // Default: wifi, bluetooth, airdrop are active
             return { wifi: true, bluetooth: true, airdrop: true };
@@ -842,35 +842,35 @@ document.addEventListener('DOMContentLoaded', () => {
             if (lockHint) lockHint.textContent = "Enter a new password to use";
             if (lockForgot) lockForgot.style.display = "none";
         }
-        
+
         // Setup forgot password hover and click
         if (lockForgot && !lockForgot.dataset.initialized) {
             lockForgot.dataset.initialized = 'true';
             lockForgot.addEventListener('mouseenter', () => lockForgot.style.color = '#ffffff');
             lockForgot.addEventListener('mouseleave', () => lockForgot.style.color = '#a1a1a6');
-            
+
             // Show reset warning dialog
             lockForgot.addEventListener('click', () => {
                 const resetWarningOverlay = document.getElementById('reset-warning-overlay');
                 const resetWarningDialog = document.getElementById('reset-warning-dialog');
                 const resetCancelBtn = document.getElementById('reset-cancel-btn');
                 const resetConfirmBtn = document.getElementById('reset-confirm-btn');
-                
+
                 if (resetWarningOverlay && resetWarningDialog) {
                     resetWarningOverlay.classList.add('show');
-                    
+
                     const dialogWidth = resetWarningDialog.offsetWidth || 280;
                     const dialogHeight = resetWarningDialog.offsetHeight || 200;
                     resetWarningDialog.style.left = `${(window.innerWidth - dialogWidth) / 2}px`;
                     resetWarningDialog.style.top = `${(window.innerHeight - dialogHeight) / 2}px`;
-                    
+
                     if (resetCancelBtn && !resetCancelBtn.dataset.initialized) {
                         resetCancelBtn.dataset.initialized = 'true';
                         resetCancelBtn.addEventListener('click', () => {
                             resetWarningOverlay.classList.remove('show');
                         });
                     }
-                    
+
                     if (resetConfirmBtn && !resetConfirmBtn.dataset.initialized) {
                         resetConfirmBtn.dataset.initialized = 'true';
                         resetConfirmBtn.addEventListener('click', () => {
@@ -891,17 +891,17 @@ document.addEventListener('DOMContentLoaded', () => {
         lockBottom.classList.remove('active');
         lockInput.blur();
     }
-    
+
     if (lockInput) {
         initLockScreen();
-        
+
         lockInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const inputValue = lockInput.value;
                 if (!inputValue) return;
 
                 const savedPassword = localStorage.getItem('macOSTahoe_Password');
-                
+
                 if (!savedPassword) {
                     // Create new password
                     localStorage.setItem('macOSTahoe_Password', inputValue);
@@ -919,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             lockHint.style.color = "#ff3b30";
                         }
                         lockInput.classList.add('shake');
-                        
+
                         setTimeout(() => {
                             lockInput.classList.remove('shake');
                             if (lockHint) {
@@ -942,7 +942,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const snapBtn = document.getElementById('snap-to-grid-btn');
     const snapCheck = document.getElementById('snap-check');
 
-    window.saveDesktopIconPositions = function() {
+    window.saveDesktopIconPositions = function () {
         const positions = {};
         document.querySelectorAll('.desktop-folder').forEach(folder => {
             const name = folder.querySelector('.folder-name').textContent;
@@ -969,12 +969,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     let currentTop = parseInt(folder.style.top) || 0;
                     const targetLeft = Math.round(currentLeft / gridSizeX) * gridSizeX + 10;
                     const targetTop = Math.round(currentTop / gridSizeY) * gridSizeY + 10;
-                    
+
                     folder.animate([
                         { left: `${currentLeft}px`, top: `${currentTop}px` },
                         { left: `${targetLeft}px`, top: `${targetTop}px` }
                     ], { duration: 300, easing: 'ease-out' });
-                    
+
                     folder.style.left = `${targetLeft}px`;
                     folder.style.top = `${targetTop}px`;
                 });
@@ -1076,39 +1076,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 menuItems = [
                     { label: 'Open Trash', bold: true, action: () => { if (typeof createWindow === 'function') createWindow('Finder', 'icons/apple/Finder.png', null); } },
                     { type: 'divider' },
-                    { label: 'Empty Trash', color: '#ff3b30', action: () => {
-                        if (window.mockFS) {
-                            window.mockFS['~/Downloads'] = [];
-                            if (window.fsHelper) window.fsHelper.save();
+                    {
+                        label: 'Empty Trash', color: '#ff3b30', action: () => {
+                            if (window.mockFS) {
+                                window.mockFS['~/Downloads'] = [];
+                                if (window.fsHelper) window.fsHelper.save();
+                            }
+                            alert('Trash Emptied');
                         }
-                        alert('Trash Emptied');
-                    } }
+                    }
                 ];
             } else {
                 menuItems = [
-                    { label: 'Open', bold: true, action: () => {
-                        if (typeof createWindow === 'function') {
-                            window.currentDir = '~/Desktop';
-                            createWindow('Finder', 'icons/apple/Finder.png', null);
-                        }
-                    } },
-                    { label: 'Get Info', action: () => alert(`Folder Info: ${appName}`) },
-                    { type: 'divider' },
-                    { label: 'Rename', action: () => {
-                        if (folderElement) {
-                            const span = folderElement.querySelector('.folder-name');
-                            const input = folderElement.querySelector('.folder-name-input');
-                            if (span && input) {
-                                span.classList.add('editing');
-                                input.classList.add('active');
-                                input.focus();
-                                input.select();
+                    {
+                        label: 'Open', bold: true, action: () => {
+                            if (typeof createWindow === 'function') {
+                                window.currentDir = '~/Desktop';
+                                createWindow('Finder', 'icons/apple/Finder.png', null);
                             }
                         }
-                    } },
-                    { label: 'Move to Trash', color: '#ff3b30', action: () => {
-                        if (folderElement) folderElement.remove();
-                    } }
+                    },
+                    { label: 'Get Info', action: () => alert(`Folder Info: ${appName}`) },
+                    { type: 'divider' },
+                    {
+                        label: 'Rename', action: () => {
+                            if (folderElement) {
+                                const span = folderElement.querySelector('.folder-name');
+                                const input = folderElement.querySelector('.folder-name-input');
+                                if (span && input) {
+                                    span.classList.add('editing');
+                                    input.classList.add('active');
+                                    input.focus();
+                                    input.select();
+                                }
+                            }
+                        }
+                    },
+                    {
+                        label: 'Move to Trash', color: '#ff3b30', action: () => {
+                            if (folderElement) folderElement.remove();
+                        }
+                    }
                 ];
             }
         } else if (appName === 'Safari') {
@@ -1166,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             menuItems = [
                 { label: `Open ${appName}`, bold: true, action: () => createWindow(appName, `icons/apple/${appName}.png`, null) },
                 { type: 'divider' },
-                { label: 'Options', action: () => {} },
+                { label: 'Options', action: () => { } },
                 { label: 'Show All Windows', action: () => { if (typeof updateTopmostActiveApp === 'function') updateTopmostActiveApp(); } },
                 { type: 'divider' },
                 { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows(appName) }
@@ -1594,11 +1602,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         spotlightResults.classList.add('show');
-        
+
         currentResults.forEach((result, idx) => {
             const item = document.createElement('div');
             item.className = 'spotlight-result-item' + (idx === selectedIndex ? ' selected' : '');
-            
+
             const iconDiv = document.createElement('div');
             iconDiv.className = 'spotlight-result-icon';
             if (result.type === 'math') {
@@ -1612,11 +1620,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const infoDiv = document.createElement('div');
             infoDiv.className = 'spotlight-result-info';
-            
+
             const title = document.createElement('span');
             title.className = 'spotlight-result-title';
             title.textContent = result.title;
-            
+
             const subtitle = document.createElement('span');
             subtitle.className = 'spotlight-result-subtitle';
             subtitle.textContent = result.subtitle;
@@ -1679,7 +1687,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
             }
-        } catch (e) {}
+        } catch (e) { }
 
         allApps.forEach(app => {
             if (app.toLowerCase().includes(query)) {
@@ -1717,7 +1725,7 @@ document.addEventListener('DOMContentLoaded', () => {
             traverseFS('~');
             traverseFS('/');
         }
-        
+
         const seen = new Set();
         currentResults = currentResults.filter(r => {
             const key = r.title + r.subtitle;

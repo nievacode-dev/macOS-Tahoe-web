@@ -1,2 +1,5 @@
 # Ignore fonts folder
 /fonts/
+
+# Ignore dark mode icons folder
+/icons/apple-dark-mode/
