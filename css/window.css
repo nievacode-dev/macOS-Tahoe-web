@@ -108,6 +108,14 @@
     border-radius: 0 !important;
 }
 
+body.fullscreen-style-windowed .macos-window.maximized {
+    top: 34px !important;
+    left: 6px !important;
+    width: calc(100vw - 12px) !important;
+    height: calc(100vh - 120px) !important;
+    border-radius: 12px !important;
+}
+
 /* Hide title bar in fullscreen by default */
 body.fullscreen-active .macos-window.maximized .title-bar {
     position: absolute;

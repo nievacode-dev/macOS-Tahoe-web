@@ -114,6 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let dragOffsetX = 0;
     let dragOffsetY = 0;
 
+    window.fullscreenStyle = localStorage.getItem('fullscreenStyle') || 'immersive';
+    if (window.fullscreenStyle === 'windowed') {
+        document.body.classList.add('fullscreen-style-windowed');
+    }
+
     // Resizing state
     let isResizing = false;
     let activeResizeHandle = null;
@@ -1073,6 +1078,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="settings-section">
                         <div class="settings-row">
                             <div class="settings-row-left">
+                                <div>
+                                    <div class="settings-row-title">Fullscreen Mode</div>
+                                    <div class="settings-row-subtitle">Behavior when clicking the green zoom button</div>
+                                </div>
+                            </div>
+                            <div class="settings-row-right">
+                                <select id="fullscreen-style-select" style="padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.1); background: #fff; font-size: 13px; outline: none; cursor: pointer;">
+                                    <option value="immersive">Immersive (Hide Dock & Menu)</option>
+                                    <option value="windowed">Windowed (Keep Dock & Menu)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <div class="settings-row">
+                            <div class="settings-row-left">
                                 <div class="settings-row-title">AirDrop & Handoff</div>
                             </div>
                             <div class="settings-row-right">
@@ -1128,6 +1149,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Set default tab
             settingsBody.innerHTML = tabContents['general'];
+            
+            const initGeneralTab = () => {
+                const fsSelect = settingsBody.querySelector('#fullscreen-style-select');
+                if (fsSelect) {
+                    fsSelect.value = window.fullscreenStyle || 'immersive';
+                    fsSelect.addEventListener('change', (e) => {
+                        window.fullscreenStyle = e.target.value;
+                        localStorage.setItem('fullscreenStyle', e.target.value);
+                        if (e.target.value === 'windowed') {
+                            document.body.classList.add('fullscreen-style-windowed');
+                        } else {
+                            document.body.classList.remove('fullscreen-style-windowed');
+                        }
+                        if (window.updateFullscreenState) window.updateFullscreenState();
+                    });
+                }
+            };
+            initGeneralTab();
 
             // Tab switching logic
             const tabs = sidebar.querySelectorAll('.settings-sidebar-item');
@@ -1142,6 +1181,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (tabContents[tabName]) {
                         settingsBody.innerHTML = tabContents[tabName];
+                        if (tabName === 'general') {
+                            initGeneralTab();
+                        }
                     } else {
                         settingsBody.innerHTML = `
                             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #888;">
@@ -1238,7 +1280,11 @@ document.addEventListener('DOMContentLoaded', () => {
         function updateFullscreenState() {
             setTimeout(() => {
                 if (document.querySelector('.macos-window.maximized:not(.minimized)')) {
-                    document.body.classList.add('fullscreen-active');
+                    if (window.fullscreenStyle === 'immersive') {
+                        document.body.classList.add('fullscreen-active');
+                    } else {
+                        document.body.classList.remove('fullscreen-active');
+                    }
                 } else {
                     document.body.classList.remove('fullscreen-active');
                     // Clean up peek state when leaving fullscreen
@@ -1246,6 +1292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }, 50);
         }
+        window.updateFullscreenState = updateFullscreenState;
 
         // Window actions
         if (btnClose) {
