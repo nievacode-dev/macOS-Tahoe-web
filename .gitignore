@@ -3,3 +3,11 @@
 
 # Ignore dark mode icons folder
 /icons/apple-dark-mode/
+
+# Ignore uncompressed apple icons folder
+/icons/apple/
+
+# macOS folder icons
+.DS_Store
+Icon\r
+

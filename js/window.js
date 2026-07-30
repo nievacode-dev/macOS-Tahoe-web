@@ -330,9 +330,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     let iconSrc = 'icons/folders/Folder.png';
                     if (isApp) {
                         const appName = name.replace('.app', '');
-                        iconSrc = `icons/apple/${appName}.png`;
+                        iconSrc = `icons/apple-compressed/${appName}.png`;
                     } else if (name.endsWith('.txt')) {
-                        iconSrc = 'icons/apple/Notes.png';
+                        iconSrc = 'icons/apple-compressed/Notes.png';
                     }
 
                     itemDiv.innerHTML = `
@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const appName = name.replace('.app', '');
                             const dockIcon = document.querySelector(`.dock-icon-wrapper[data-name="${appName}"]`);
                             if (dockIcon) dockIcon.click();
-                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple/${appName}.png`, null);
+                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple-compressed/${appName}.png`, null);
                         });
                     } else if (!name.includes('.')) {
                         itemDiv.addEventListener('dblclick', () => {
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const appName = itemName.replace('.app', '');
                             const dockIcon = document.querySelector(`.dock-icon-wrapper[data-name="${appName}"]`);
                             if (dockIcon) dockIcon.click();
-                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple/${appName}.png`, null);
+                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple-compressed/${appName}.png`, null);
                         } else if (!itemName.includes('.')) {
                             let newPath = currentPath === '/' ? `/${itemName}` : `${currentPath}/${itemName}`;
                             history = history.slice(0, historyIdx + 1);
@@ -1008,7 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         Control Center
                     </div>
                     <div class="settings-sidebar-item" data-tab="siri">
-                        <div class="settings-icon" style="background: #34c759;"><img src="icons/apple/Siri.png" style="width:14px; filter: brightness(0) invert(1);"></div>
+                        <div class="settings-icon" style="background: #34c759;"><img src="icons/apple-compressed/Siri.png" style="width:14px; filter: brightness(0) invert(1);"></div>
                         Siri & Spotlight
                     </div>
                 </div>
