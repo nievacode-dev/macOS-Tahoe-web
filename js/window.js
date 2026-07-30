@@ -327,16 +327,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     itemDiv.className = 'finder-item';
 
                     const isApp = name.endsWith('.app');
-                    let iconSrc = 'icons/folders/Folder.png';
+                    let iconSrc = 'icons/folders-compressed/Folder.ico';
                     if (isApp) {
                         const appName = name.replace('.app', '');
-                        iconSrc = `icons/apple-compressed/${appName}.png`;
+                        iconSrc = `icons/apple-compressed/${appName}.ico`;
                     } else if (name.endsWith('.txt')) {
-                        iconSrc = 'icons/apple-compressed/Notes.png';
+                        iconSrc = 'icons/apple-compressed/Notes.ico';
                     }
 
                     itemDiv.innerHTML = `
-                        <img src="${iconSrc}" alt="${name}" onerror="this.src='icons/folders/Folder.png'" draggable="false">
+                        <img src="${iconSrc}" alt="${name}" onerror="this.src='icons/folders-compressed/Folder.ico'" draggable="false">
                         <span class="finder-item-name">${name}</span>
                     `;
 
@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const appName = name.replace('.app', '');
                             const dockIcon = document.querySelector(`.dock-icon-wrapper[data-name="${appName}"]`);
                             if (dockIcon) dockIcon.click();
-                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple-compressed/${appName}.png`, null);
+                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple-compressed/${appName}.ico`, null);
                         });
                     } else if (!name.includes('.')) {
                         itemDiv.addEventListener('dblclick', () => {
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const appName = itemName.replace('.app', '');
                             const dockIcon = document.querySelector(`.dock-icon-wrapper[data-name="${appName}"]`);
                             if (dockIcon) dockIcon.click();
-                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple-compressed/${appName}.png`, null);
+                            else if (typeof createWindow === 'function') createWindow(appName, `icons/apple-compressed/${appName}.ico`, null);
                         } else if (!itemName.includes('.')) {
                             let newPath = currentPath === '/' ? `/${itemName}` : `${currentPath}/${itemName}`;
                             history = history.slice(0, historyIdx + 1);
@@ -1008,7 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         Control Center
                     </div>
                     <div class="settings-sidebar-item" data-tab="siri">
-                        <div class="settings-icon" style="background: #34c759;"><img src="icons/apple-compressed/Siri.png" style="width:14px; filter: brightness(0) invert(1);"></div>
+                        <div class="settings-icon" style="background: #34c759;"><img src="icons/apple-compressed/Siri.ico" style="width:14px; filter: brightness(0) invert(1);"></div>
                         Siri & Spotlight
                     </div>
                 </div>
@@ -1149,7 +1149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Set default tab
             settingsBody.innerHTML = tabContents['general'];
-            
+
             const initGeneralTab = () => {
                 const fsSelect = settingsBody.querySelector('#fullscreen-style-select');
                 if (fsSelect) {

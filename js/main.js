@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (np) {
                     html += `<div class="cc-module cc-now-playing" data-widget-id="${np.id}">
                         <div class="np-header">
-                            <img src="icons/apple-compressed/Podcasts.png" alt="Art" class="np-art">
+                            <img src="icons/apple-compressed/Podcasts.ico" alt="Art" class="np-art">
                             <div class="np-info">
                                 <span class="np-title">Besties</span>
                                 <span class="np-subtitle">Black Country, New R...</span>
@@ -1074,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isFolder || appName === 'Folder' || appName === 'Downloads' || appName === 'Trash') {
             if (appName === 'Trash') {
                 menuItems = [
-                    { label: 'Open Trash', bold: true, action: () => { if (typeof createWindow === 'function') createWindow('Finder', 'icons/apple-compressed/Finder.png', null); } },
+                    { label: 'Open Trash', bold: true, action: () => { if (typeof createWindow === 'function') createWindow('Finder', 'icons/apple-compressed/Finder.ico', null); } },
                     { type: 'divider' },
                     {
                         label: 'Empty Trash', color: '#ff3b30', action: () => {
@@ -1092,7 +1092,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         label: 'Open', bold: true, action: () => {
                             if (typeof createWindow === 'function') {
                                 window.currentDir = '~/Desktop';
-                                createWindow('Finder', 'icons/apple-compressed/Finder.png', null);
+                                createWindow('Finder', 'icons/apple-compressed/Finder.ico', null);
                             }
                         }
                     },
@@ -1121,42 +1121,42 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (appName === 'Safari') {
             menuItems = [
-                { label: 'Open Safari', bold: true, action: () => createWindow('Safari', 'icons/apple-compressed/Safari.png', null) },
+                { label: 'Open Safari', bold: true, action: () => createWindow('Safari', 'icons/apple-compressed/Safari.ico', null) },
                 { type: 'divider' },
-                { label: 'New Window', action: () => createWindow('Safari', 'icons/apple-compressed/Safari.png', null) },
-                { label: 'New Private Window', action: () => createWindow('Safari', 'icons/apple-compressed/Safari.png', null) },
+                { label: 'New Window', action: () => createWindow('Safari', 'icons/apple-compressed/Safari.ico', null) },
+                { label: 'New Private Window', action: () => createWindow('Safari', 'icons/apple-compressed/Safari.ico', null) },
                 { type: 'divider' },
                 { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows('Safari') }
             ];
         } else if (appName === 'Terminal') {
             menuItems = [
-                { label: 'Open Terminal', bold: true, action: () => createWindow('Terminal', 'icons/apple-compressed/Terminal.png', null) },
+                { label: 'Open Terminal', bold: true, action: () => createWindow('Terminal', 'icons/apple-compressed/Terminal.ico', null) },
                 { type: 'divider' },
-                { label: 'New Window', action: () => createWindow('Terminal', 'icons/apple-compressed/Terminal.png', null) },
-                { label: 'New Tab', action: () => createWindow('Terminal', 'icons/apple-compressed/Terminal.png', null) },
+                { label: 'New Window', action: () => createWindow('Terminal', 'icons/apple-compressed/Terminal.ico', null) },
+                { label: 'New Tab', action: () => createWindow('Terminal', 'icons/apple-compressed/Terminal.ico', null) },
                 { type: 'divider' },
                 { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows('Terminal') }
             ];
         } else if (appName === 'Messages') {
             menuItems = [
-                { label: 'Open Messages', bold: true, action: () => createWindow('Messages', 'icons/apple-compressed/Messages.png', null) },
+                { label: 'Open Messages', bold: true, action: () => createWindow('Messages', 'icons/apple-compressed/Messages.ico', null) },
                 { type: 'divider' },
-                { label: 'New Message', action: () => createWindow('Messages', 'icons/apple-compressed/Messages.png', null) },
+                { label: 'New Message', action: () => createWindow('Messages', 'icons/apple-compressed/Messages.ico', null) },
                 { type: 'divider' },
                 { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows('Messages') }
             ];
         } else if (appName === 'Mail') {
             menuItems = [
-                { label: 'Open Mail', bold: true, action: () => createWindow('Mail', 'icons/apple-compressed/Mail.png', null) },
+                { label: 'Open Mail', bold: true, action: () => createWindow('Mail', 'icons/apple-compressed/Mail.ico', null) },
                 { type: 'divider' },
-                { label: 'Compose New Mail', action: () => createWindow('Mail', 'icons/apple-compressed/Mail.png', null) },
+                { label: 'Compose New Mail', action: () => createWindow('Mail', 'icons/apple-compressed/Mail.ico', null) },
                 { label: 'Get New Mail', action: () => alert('Checking for new mail...') },
                 { type: 'divider' },
                 { label: 'Quit', color: '#ff3b30', action: () => closeAppWindows('Mail') }
             ];
         } else if (appName === 'Music' || appName === 'Podcasts' || appName === 'Apple TV') {
             menuItems = [
-                { label: `Open ${appName}`, bold: true, action: () => createWindow(appName, `icons/apple-compressed/${appName}.png`, null) },
+                { label: `Open ${appName}`, bold: true, action: () => createWindow(appName, `icons/apple-compressed/${appName}.ico`, null) },
                 { type: 'divider' },
                 { label: 'Play / Pause', action: () => alert('Playback toggled') },
                 { label: 'Next Track', action: () => alert('Next track') },
@@ -1165,14 +1165,14 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
         } else if (appName === 'Finder') {
             menuItems = [
-                { label: 'New Finder Window', bold: true, action: () => createWindow('Finder', 'icons/apple-compressed/Finder.png', null) },
+                { label: 'New Finder Window', bold: true, action: () => createWindow('Finder', 'icons/apple-compressed/Finder.ico', null) },
                 { type: 'divider' },
                 { label: 'Connect to Server...', action: () => alert('Connect to Server...') },
                 { label: 'Go to Folder...', action: () => alert('Go to Folder...') }
             ];
         } else {
             menuItems = [
-                { label: `Open ${appName}`, bold: true, action: () => createWindow(appName, `icons/apple-compressed/${appName}.png`, null) },
+                { label: `Open ${appName}`, bold: true, action: () => createWindow(appName, `icons/apple-compressed/${appName}.ico`, null) },
                 { type: 'divider' },
                 { label: 'Options', action: () => { } },
                 { label: 'Show All Windows', action: () => { if (typeof updateTopmostActiveApp === 'function') updateTopmostActiveApp(); } },
@@ -1284,7 +1284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         folder.style.top = `${y}px`;
 
         const img = document.createElement('img');
-        img.src = 'icons/folders/Folder.png';
+        img.src = 'icons/folders-compressed/Folder.ico';
         img.alt = 'Folder';
         img.draggable = false;
 
@@ -1382,7 +1382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         folder.addEventListener('dblclick', () => {
             if (typeof createWindow === 'function') {
                 window.currentDir = '~/Desktop';
-                createWindow('Finder', 'icons/apple-compressed/Finder.png', null);
+                createWindow('Finder', 'icons/apple-compressed/Finder.ico', null);
             }
         });
 
@@ -1614,7 +1614,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const img = document.createElement('img');
                 img.src = result.icon;
-                img.onerror = () => { img.src = 'icons/folders/Folder.png'; };
+                img.onerror = () => { img.src = 'icons/folders-compressed/Folder.ico'; };
                 iconDiv.appendChild(img);
             }
 
@@ -1662,7 +1662,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof createWindow === 'function') {
                 const parentPath = result.path.substring(0, result.path.lastIndexOf('/')) || '/';
                 window.currentDir = parentPath;
-                createWindow('Finder', 'icons/apple-compressed/Finder.png', null);
+                createWindow('Finder', 'icons/apple-compressed/Finder.ico', null);
             }
         }
     }
@@ -1694,7 +1694,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentResults.push({
                     title: app,
                     subtitle: 'Application',
-                    icon: `icons/apple-compressed/${app}.png`,
+                    icon: `icons/apple-compressed/${app}.ico`,
                     type: 'app'
                 });
             }
@@ -1710,7 +1710,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             currentResults.push({
                                 title: item,
                                 subtitle: path === '/' ? '/' : path + '/' + item,
-                                icon: item.includes('.') ? 'icons/apple-compressed/Notes.png' : 'icons/folders/Folder.png',
+                                icon: item.includes('.') ? 'icons/apple-compressed/Notes.ico' : 'icons/folders-compressed/Folder.ico',
                                 type: 'file',
                                 path: path === '/' ? '/' + item : path + '/' + item
                             });
