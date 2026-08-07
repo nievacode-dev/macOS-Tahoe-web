@@ -10,13 +10,21 @@ document.addEventListener('DOMContentLoaded', () => {
             bootProgressBar.style.width = '100%';
         }, 100);
 
-        // Wait 10 seconds, then fade out boot screen
-        setTimeout(() => {
-            bootScreen.style.opacity = '0';
+        // Wait until all resources are downloaded, then keep 10 seconds
+        const hideBootScreen = () => {
             setTimeout(() => {
-                bootScreen.style.display = 'none';
-            }, 500); // Wait for fade transition (0.5s matching CSS)
-        }, 10000);
+                bootScreen.style.opacity = '0';
+                setTimeout(() => {
+                    bootScreen.style.display = 'none';
+                }, 500); // Wait for fade transition (0.5s matching CSS)
+            }, 10000);
+        };
+
+        if (document.readyState === 'complete') {
+            hideBootScreen();
+        } else {
+            window.addEventListener('load', hideBootScreen);
+        }
     }
     // --- Dock Positions Persistence ---
     const DOCK_POSITIONS_KEY = 'macOSTahoe_Dock_Positions';
