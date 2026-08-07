@@ -776,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // macOS Safari Refused to Connect Error Overlay
             const errorOverlay = document.createElement('div');
             errorOverlay.className = 'safari-error-overlay';
-            errorOverlay.style.cssText = 'position: absolute; inset: 0; background: #f8f9fa; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; z-index: 10; color: #1d1d1f;';
+            errorOverlay.style.cssText = 'position: absolute; inset: 0; background: #f8f9fa; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; font-family: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; z-index: 10; color: #1d1d1f;';
             errorOverlay.innerHTML = `
                 <div style="font-size: 44px; margin-bottom: 16px; color: #86868b;"><i class="fa-solid fa-compass"></i></div>
                 <h2 style="font-size: 20px; font-weight: 600; margin: 0 0 8px 0; color: #1d1d1f;">Safari Can’t Open the Page</h2>
@@ -882,7 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <head>
                                 <meta charset="UTF-8">
                                 <style>
-                                    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; padding: 24px; color: #1d1d1f; background: #fff; margin: 0; }
+                                    body { font-family: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; padding: 24px; color: #1d1d1f; background: #fff; margin: 0; }
                                     h2 { font-size: 18px; margin-top: 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #eee; padding-bottom: 12px; }
                                     ul { list-style: none; padding: 0; margin: 0; }
                                     li { padding: 10px 12px; border-bottom: 1px solid #f5f5f7; display: flex; align-items: center; gap: 10px; font-size: 14px; }

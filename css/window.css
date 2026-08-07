@@ -529,7 +529,7 @@ body.fs-peek .macos-window.maximized .title-bar {
 .macos-window.terminal-window .window-title {
     color: #e0e0e0;
     font-weight: 600;
-    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
     display: flex;
     align-items: center;
     margin: 0;
